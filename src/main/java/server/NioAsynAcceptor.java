@@ -4,74 +4,108 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.ClosedChannelException;
 import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
+import server.acceptor.AcceptorRunner;
+
+/**
+ * 
+ * 对于tomcat源码的分析，、
+ * 如何解耦nio socketchanel 和 selector的关系
+ * Accepor -> 建立 socketchannel
+ * PushEvent -> register read 
+ * Poller -> processkey真正的处理请求的逻辑
+ * 
+ * 
+ * 
+ * 
+ * @author mujjiang
+ *
+ */
 public class NioAsynAcceptor {
-	
+
 	private static Logger logger = Logger.getLogger("server.NioAsynAcceptor");
-	
-	private List<NioAsynProcessor> lists = null;
-	
-	private Thread[] thread;
-	
+
+	AcceptorRunner acceptorRunner;
+
+	/**
+	 * acceptor size
+	 */
 	private int size;
 
 	public NioAsynAcceptor(int size) {
 		this.size = size;
-		lists = new ArrayList<NioAsynProcessor>(size);
-		thread = new Thread[5];
+		acceptorRunner = new AcceptorRunner(size);
 	}
-	
-	private void initThread(ServerSocketChannel serverSocketChannel){
-		
-		for(int i = 0; i<size; i++){
-			Thread t = new Thread(new NioAsynProcessor(serverSocketChannel)," thread-"+i);
-			thread[i] = t;
-			logger.info("初始化线程:"+t.getName());
-		}
-		
-		for(int i = 0; i<thread.length; i++){
-			Thread t = thread[i];
-			logger.info("启动线程:"+t.getName());
-			t.start();
-		}
-		
+
+	private void initThread() {
+
 	}
-	
-	public void start(){
-		init();
+
+	public void start() {
+		init(); // 先初始化所有内容
+		acceptorRunner.start();
 	}
-	
-	private void init(){
-		
-		try {
-			ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
 
-			serverSocketChannel.bind(new InetSocketAddress(8081));
+	private void initAcceptorRunner() {
+		acceptorRunner.init();
+	}
 
-			serverSocketChannel.configureBlocking(false);
+	/**
+	 * 初始化用于监听socket的内容
+	 * 
+	 */
+	private void initSocket() {
+		new Thread(new Runnable() {
 
-			initThread(serverSocketChannel);
-			
-		} catch (ClosedChannelException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+			public void run() {
+
+				try {
+					ServerSocketChannel serverSocketChannel = ServerSocketChannel
+							.open();
+
+					serverSocketChannel.bind(new InetSocketAddress(8081));
+
+					logger.info("start socket listener...");
+
+					// serverSocketChannel.configureBlocking(true);
+
+					while(true){
+						SocketChannel accept = serverSocketChannel.accept();
+						logger.info("receive socket...");
+						acceptorRunner.submitJob(accept);
+					}
+					
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+
+			}
+		}).start();
+
+	}
+
+	private void init() {
+
+		initSocket();
+
+		initThread();
+
+		initAcceptorRunner();
 
 	}
 
 	// private static final int TIMEOUT = 3000;
 
 	public static void main(String[] args) throws IOException {
-		
+
 		NioAsynAcceptor NioAsynAcceptor = new NioAsynAcceptor(5);
-		
+
 		NioAsynAcceptor.start();
 
 	}
-
 
 }
