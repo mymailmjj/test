@@ -29,7 +29,7 @@ public class NioAsynServer {
 	public static void handleAccept(SelectionKey key) throws IOException {
 		ServerSocketChannel ssChannel = (ServerSocketChannel) key.channel();
 		SocketChannel sc = ssChannel.accept();
-		sc.configureBlocking(false);
+		sc.configureBlocking(false);	
 		sc.register(key.selector(), SelectionKey.OP_READ,
 				ByteBuffer.allocateDirect(BUFFER_SIZE));
 	}
