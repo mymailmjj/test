@@ -21,6 +21,8 @@ public class StaticSingleton {
 	
 	private StaticSingleton(){
 		System.out.println("a");
+		ClassLoader classLoader = this.getClass().getClassLoader();
+		System.out.println("a class loader:"+classLoader);
 	}
 	
 	
