@@ -8,6 +8,7 @@ package singleton;
  * 
  */
 public class Singleton {
+	
 
 	private static volatile Singleton sing = null;
 
