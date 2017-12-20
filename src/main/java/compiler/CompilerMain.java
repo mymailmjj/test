@@ -5,13 +5,11 @@ package compiler;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.StringTokenizer;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.internal.compiler.CompilationResult;
 import org.eclipse.jdt.internal.compiler.Compiler;
@@ -19,16 +17,16 @@ import org.eclipse.jdt.internal.compiler.DefaultErrorHandlingPolicies;
 import org.eclipse.jdt.internal.compiler.ICompilerRequestor;
 import org.eclipse.jdt.internal.compiler.IErrorHandlingPolicy;
 import org.eclipse.jdt.internal.compiler.IProblemFactory;
-import org.eclipse.jdt.internal.compiler.classfmt.ClassFileReader;
-import org.eclipse.jdt.internal.compiler.classfmt.ClassFormatException;
+import org.eclipse.jdt.internal.compiler.batch.CompilationUnit;
+import org.eclipse.jdt.internal.compiler.batch.FileSystem;
 import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
-import org.eclipse.jdt.internal.compiler.env.INameEnvironment;
-import org.eclipse.jdt.internal.compiler.env.NameEnvironmentAnswer;
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
 import org.eclipse.jdt.internal.compiler.problem.DefaultProblemFactory;
 
 /**
- * 测试用jdt去编译一个java文件
+ * 
+ * 测试用jdt去编译一个java文件 这里使用原始的方法去编译
+ * 这个计划没有成功，需要继续
  * 
  * @author cango
  * 
@@ -38,106 +36,46 @@ public class CompilerMain {
 	private static final File WORKDIR = new File(
 			"C:\\Users\\cango\\Desktop\\000f\\compiler");
 
-	static class MyINameEnvironment implements INameEnvironment {
+	static class MyINameEnvironment extends FileSystem {
 
-		public NameEnvironmentAnswer findType(char[][] compoundTypeName) {
-			return findType(join(compoundTypeName));
+		private static Classpath[] classpaths;
+
+		static {
+			initclasspath();
 		}
 
-		public NameEnvironmentAnswer findType(char[] typeName,
-				char[][] packageName) {
-			return findType(join(packageName) + "." + new String(typeName));
-		}
+		private static void initclasspath() {
 
-		private NameEnvironmentAnswer findType(final String name) {
+			String classProp = System.getProperty("java.class.path")+File.pathSeparator+System.getenv("CLASSPATH");
+			
+			StringTokenizer tokenizer = new StringTokenizer(classProp,
+					File.pathSeparator);
 
-			System.out.println("findtypename:" + name);
+			int countTokens = tokenizer.countTokens();
 
-			File file = new File(WORKDIR, name.replace('.', '/') + ".java");
+			classpaths = new Classpath[countTokens];
 
-			if (file.isFile()) {
+			int i = 0;
 
-				return new NameEnvironmentAnswer(new CompilationUnit(file),
-						null);
-			}
-
-			try {
-
-				InputStream input = this.getClass().getClassLoader()
-						.getResourceAsStream(name.replace(".", "/") + ".class");
-
-				if (input != null) {
-
-					byte[] bytes = IOUtils.toByteArray(input);
-
-					if (bytes != null) {
-
-						ClassFileReader classFileReader = new ClassFileReader(
-								bytes, name.toCharArray(), true);
-
-						return new NameEnvironmentAnswer(classFileReader, null);
-
-					}
-
+			String token;
+			while (tokenizer.hasMoreTokens()) {
+				token = tokenizer.nextToken();
+				FileSystem.Classpath currentClasspath = FileSystem
+						.getClasspath(token, "utf-8", null);
+				if (currentClasspath != null) {
+					classpaths[i++] = currentClasspath;
 				}
-
-			} catch (ClassFormatException e) {
-
-				throw new RuntimeException(e);
-
-			} catch (IOException e) {
-
-				throw new RuntimeException(e);
-
 			}
 
-			return null;
-
+//			classpaths[countTokens] =  
+			
+			System.out.println("classProp:" + classProp);
+			
 		}
 
-		public boolean isPackage(char[][] parentPackageName, char[] packageName) {
-			String name = new String(packageName);
-			
-			System.out.println("name11:"+name);
-			
-			if (parentPackageName != null) {
-
-				name = join(parentPackageName) + "." + name;
-			}
-
-			File target = new File(WORKDIR, name.replace('.', '/'));
-			
-			System.out.println("nametarget:"+target.getName());
-			
-			System.out.println("nametarget:"+target.getAbsolutePath());
-
-			return !target.isFile();
+		protected MyINameEnvironment(String[] initialFileNames) {
+			super(classpaths, initialFileNames);
 		}
-
-		public void cleanup() {
-
-		}
-
-		private String join(char[][] chars) {
-
-			StringBuilder sb = new StringBuilder();
-
-			for (char[] item : chars) {
-
-				if (sb.length() > 0) {
-
-					sb.append(".");
-
-				}
-
-				sb.append(item);
-
-			}
-
-			return sb.toString();
-
-		}
-
 	}
 
 	private static String join(char[][] chars) {
@@ -160,68 +98,6 @@ public class CompilerMain {
 
 	}
 
-	static class CompilationUnit implements ICompilationUnit {
-
-		private File file;
-
-		public CompilationUnit(File file) {
-			this.file = file;
-		}
-
-		public char[] getFileName() {
-			return file.getName().toCharArray();
-		}
-
-		public char[] getContents() {
-
-			try {
-				return FileUtils.readFileToString(file).toCharArray();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			return null;
-
-		}
-
-		public char[] getMainTypeName() {
-			return file.getName().replace(".java", "").toCharArray();
-		}
-
-		public char[][] getPackageName() {
-
-			String absolutePath = this.file.getParentFile().getAbsolutePath();
-
-			System.out.println("absolutePath:\t" + absolutePath);
-
-			String fullPkgName = absolutePath.replace(
-					WORKDIR.getAbsolutePath(), "");
-
-			fullPkgName = fullPkgName.replace("/", ".").replace("\\", ".");
-
-			if (fullPkgName.startsWith("."))
-
-				fullPkgName = fullPkgName.substring(1);
-
-			String[] items = fullPkgName.split("[.]");
-
-			char[][] pkgName = new char[items.length][];
-
-			for (int i = 0; i < items.length; i++) {
-
-				pkgName[i] = items[i].toCharArray();
-
-			}
-
-			System.out.println("pkgName:\t" + join(pkgName));
-
-			return pkgName;
-		}
-
-		public boolean ignoreOptionalProblems() {
-			return false;
-		}
-
-	}
 
 	/**
 	 * @param args
@@ -278,13 +154,29 @@ public class CompilerMain {
 
 		};
 
+		
+		File file = new File("C://Users//cango//Desktop//000f//compiler//test//HelloJava.java");
+		
+		System.out.println(file.getName());
+		
 		final IProblemFactory problemFactory = new DefaultProblemFactory(
 				Locale.getDefault());
 
-		Compiler compiler = new Compiler(new MyINameEnvironment(), policy,
+		MyINameEnvironment myINameEnvironment = new MyINameEnvironment(new String[]{file.getAbsolutePath()});
+		
+		Compiler compiler = new Compiler(myINameEnvironment, policy,
 				cOptions, requestor, problemFactory);
-		compiler.compile(new ICompilationUnit[] { new CompilationUnit(new File(
-				WORKDIR, "test\\HelloJava.java")) });
+		
+		String canonicalPath = null;
+		try {
+			canonicalPath = file.getCanonicalPath();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		CompilationUnit CompilationUnit = new CompilationUnit(null, file.getAbsolutePath(), null, canonicalPath, true);
+		
+		compiler.compile(new ICompilationUnit[] { CompilationUnit});
 
 	}
 
