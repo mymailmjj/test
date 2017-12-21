@@ -62,11 +62,10 @@ public class SSLNioServer {
 
 		createSocketChannel();
 
-		
 		createSSLCotext();
 
 		createSSLEngine();
-		
+
 		createBuffers();
 
 		try {
@@ -132,6 +131,8 @@ public class SSLNioServer {
 			while (iterator.hasNext()) {
 
 				SelectionKey key = iterator.next();
+				
+				iterator.remove(); // 处理完毕删除
 
 				if (key.isAcceptable()) {
 
@@ -142,7 +143,7 @@ public class SSLNioServer {
 
 					SocketChannel socketChannel = channel.accept();
 
-					doShakeHand(socketChannel);
+					doHandShake(socketChannel);
 
 				} else if (key.isReadable()) {
 
@@ -155,22 +156,14 @@ public class SSLNioServer {
 						SSLEngineResult engineResult = sslEngine.unwrap(netIn,
 								appIn);
 						doTask();
-//						 runDelegatedTasks(engineResult, sslEngine);
+						// runDelegatedTasks(engineResult, sslEngine);
 						netIn.compact();
 						if (engineResult.getStatus() == SSLEngineResult.Status.OK) {
-							appIn.flip();// ready for reading
-							
-							while(appIn.hasRemaining()){
-								
-								byte b = appIn.get();
-								System.out.print((char)b);
-								
-							}
-							System.out.println();
-							appIn.compact();
-							
-							successResponse(key);
-							
+							System.out.println("text recieved");  
+		                    appIn.flip();// ready for reading  
+		                    System.out.println(decoder.decode(appIn));  
+		                    appIn.compact();  
+
 						} else if (engineResult.getStatus() == SSLEngineResult.Status.CLOSED) {
 							doSSLClose(key);
 						}
@@ -178,18 +171,31 @@ public class SSLNioServer {
 					}
 
 				} else if (key.isWritable()) {
-
+					
+					SocketChannel sc = (SocketChannel) key.channel();  
+		            //if(!sslEngine.isOutboundDone()) {  
+		                //netOut.clear();  
+		            SSLEngineResult engineResult = sslEngine.wrap(appOut, netOut);  
+		            doTask();  
+		            //runDelegatedTasks(engineResult, sslEngine);  
+		            if (engineResult.getHandshakeStatus() == HandshakeStatus.NOT_HANDSHAKING)  
+		            {  
+		                System.out.println("text sent");  
+		            }  
+		            netOut.flip();  
+		            sc.write(netOut);  
+		            netOut.compact();  
+					
 				}
 
-				iterator.remove(); // 处理完毕删除
 			}
 
 		}
 
 	}
-	
-	
-	public void successResponse(SelectionKey key){
+
+	public void successResponse(SelectionKey key) {
+		System.out.println("返回开始");
 		appOut.put("HTTP/1.1 200 OK \r\n".getBytes());
 		appOut.flip();
 		appOut.compact();
@@ -199,102 +205,70 @@ public class SSLNioServer {
 		} catch (SSLException e) {
 			e.printStackTrace();
 		}
+
+		System.out.println("返回结束");
 	}
-	
-	
-	/*public static void successResponse(SelectionKey key) throws IOException{
-		ByteBuffer buf = ByteBuffer.allocate(1024);
-		buf.put("HTTP/1.1 200 OK \r\n".getBytes());
-		buf.flip();
-		SocketChannel sc = (SocketChannel) key.channel();
-		while (buf.hasRemaining()) {
-			System.out.println("server response ...");
-			sc.write(buf);
+
+	public static HandshakeStatus runDelegatedTasks(
+			SSLEngineResult engineResult, SSLEngine sslEngine) {
+		if (engineResult.getHandshakeStatus() == HandshakeStatus.NEED_TASK) {
+			Runnable runnable;
+			while ((runnable = sslEngine.getDelegatedTask()) != null) {
+				System.out.println("\trunning delegated task...");
+				runnable.run();
+			}
+			HandshakeStatus hsStatus = sslEngine.getHandshakeStatus();
+			if (hsStatus == HandshakeStatus.NEED_TASK) {
+				// throw new
+				// Exception("handshake shouldn't need additional tasks");
+				System.out.println("handshake shouldn't need additional tasks");
+			}
+			System.out.println("\tnew HandshakeStatus: " + hsStatus);
 		}
-		buf.compact();
-		
-	}*/
-	
-	
-	
-	 public static HandshakeStatus runDelegatedTasks(SSLEngineResult engineResult, SSLEngine sslEngine) 
-    { 
-        if (engineResult.getHandshakeStatus() == HandshakeStatus.NEED_TASK) 
-        { 
-            Runnable runnable; 
-            while ((runnable = sslEngine.getDelegatedTask()) != null) 
-            { 
-                System.out.println("\trunning delegated task..."); 
-                runnable.run(); 
-            } 
-            HandshakeStatus hsStatus = sslEngine.getHandshakeStatus(); 
-            if (hsStatus == HandshakeStatus.NEED_TASK) 
-            { 
-                //throw new Exception("handshake shouldn't need additional tasks"); 
-                System.out.println("handshake shouldn't need additional tasks"); 
-            } 
-            System.out.println("\tnew HandshakeStatus: " + hsStatus); 
-        } 
-        return sslEngine.getHandshakeStatus(); 
-         
-    }  
-	
+		return sslEngine.getHandshakeStatus();
+
+	}
 
 	private boolean handShakeDone = false;
 
-	private void doShakeHand(SocketChannel sc) throws IOException {
-		try {
-			sslEngine.beginHandshake();
-		} catch (SSLException e) {
-			e.printStackTrace();
-		}
-
-		HandshakeStatus handshakeStatus = sslEngine.getHandshakeStatus();
-
-		while (!handShakeDone) {
-
-			switch (handshakeStatus) {
-			case FINISHED:
-
-				break;
-
-			case NEED_TASK:
-				handshakeStatus = doTask();
-				break;
-
-			case NEED_UNWRAP:
-				// unwrap means unwrap the ssl packet to get ssl handshake
-				// information
-				sc.read(netIn);
-				netIn.flip();
-				handshakeStatus = doUnwrap();
-				break;
-
-			case NEED_WRAP:
-				// wrap means wrap the app packet into an ssl packet to add ssl
-				// handshake information
-				handshakeStatus = doWrap();
-				sc.write(netOut);
-				netOut.clear();
-				break;
-
-			case NOT_HANDSHAKING:
-				// now it is not in a handshake or say byebye status. here it
-				// means handshake is over and ready for ssl talk
-				sc.configureBlocking(false);// set the socket to unblocking mode
-				sc.register(selector, SelectionKey.OP_READ
-						| SelectionKey.OP_WRITE);// register the read and write
-													// event
-				handShakeDone = true;
-				break;
-
-			default:
-				break;
-			}
-
-		}
-
-	}
+	 private void doHandShake(SocketChannel sc) throws IOException  
+	    {  
+	          
+	        sslEngine.beginHandshake();//explicitly begin the handshake  
+	        HandshakeStatus hsStatus = sslEngine.getHandshakeStatus();  
+	        while (!handShakeDone)  
+	        {  
+	            switch(hsStatus){  
+	                case FINISHED:  
+	                    //the status become FINISHED only when the ssl handshake is finished  
+	                    //but we still need to send data, so do nothing here  
+	                    break;  
+	                case NEED_TASK:  
+	                    //do the delegate task if there is some extra work such as checking the keystore during the handshake  
+	                    hsStatus = doTask();  
+	                    break;  
+	                case NEED_UNWRAP:  
+	                    //unwrap means unwrap the ssl packet to get ssl handshake information  
+	                    sc.read(netIn);  
+	                    netIn.flip();  
+	                    hsStatus = doUnwrap();  
+	                    break;  
+	                case NEED_WRAP:  
+	                    //wrap means wrap the app packet into an ssl packet to add ssl handshake information  
+	                    hsStatus = doWrap();  
+	                    sc.write(netOut);  
+	                    netOut.clear();  
+	                    break;  
+	                case NOT_HANDSHAKING:  
+	                    //now it is not in a handshake or say byebye status. here it means handshake is over and ready for ssl talk  
+	                    sc.configureBlocking(false);//set the socket to unblocking mode  
+	                    sc.register(selector, SelectionKey.OP_READ|SelectionKey.OP_WRITE);//register the read and write event  
+	                    handShakeDone = true;  
+	                    break;  
+	            }  
+	        }  
+	          
+	    }  
 
 	private HandshakeStatus doUnwrap() throws SSLException {
 		HandshakeStatus hsStatus;
@@ -317,21 +291,23 @@ public class SSLNioServer {
 		return hsStatus;
 	}
 
-	private HandshakeStatus doTask() {
-		Runnable runnable;
-		while ((runnable = sslEngine.getDelegatedTask()) != null) {
-			System.out.println("\trunning delegated task...");
-			runnable.run();
-		}
-		HandshakeStatus hsStatus = sslEngine.getHandshakeStatus();
-		if (hsStatus == HandshakeStatus.NEED_TASK) {
-			// throw new Exception("handshake shouldn't need additional tasks");
-			System.out.println("handshake shouldn't need additional tasks");
-		}
-		System.out.println("\tnew HandshakeStatus: " + hsStatus);
-
-		return hsStatus;
-	}
+	private HandshakeStatus doTask() {  
+        Runnable runnable;  
+        while ((runnable = sslEngine.getDelegatedTask()) != null)  
+        {  
+            System.out.println("\trunning delegated task...");  
+            runnable.run();  
+        }  
+        HandshakeStatus hsStatus = sslEngine.getHandshakeStatus();  
+        if (hsStatus == HandshakeStatus.NEED_TASK)  
+        {  
+            //throw new Exception("handshake shouldn't need additional tasks");  
+            System.out.println("handshake shouldn't need additional tasks");  
+        }  
+        System.out.println("\tnew HandshakeStatus: " + hsStatus);  
+          
+        return hsStatus;  
+    }  
 
 	private void doSSLClose(SelectionKey key) throws IOException {
 		SocketChannel sc = (SocketChannel) key.channel();
