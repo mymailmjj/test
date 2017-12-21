@@ -1,7 +1,7 @@
 /**
  * 
  */
-package server1;
+package sslserver;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -19,7 +19,7 @@ public class Client {
 		try {
 			SocketChannel socketChannel = SocketChannel.open();
 			
-			socketChannel.connect(new InetSocketAddress("localhost", 8081));
+			socketChannel.connect(new InetSocketAddress("localhost", 8443));
 			
 			while(true) {
 				
