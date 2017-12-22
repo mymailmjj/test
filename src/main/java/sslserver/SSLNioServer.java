@@ -127,6 +127,7 @@ public class SSLNioServer {
 			Set<SelectionKey> selectedKeys = selector.selectedKeys();
 
 			Iterator<SelectionKey> iterator = selectedKeys.iterator();
+			
 
 			while (iterator.hasNext()) {
 

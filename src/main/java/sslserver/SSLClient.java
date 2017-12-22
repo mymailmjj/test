@@ -152,6 +152,7 @@ public class SSLClient {
 			TrustManagerFactory trustFactory = TrustManagerFactory.getInstance("SunX509");
 			
 			
+			
 			KeyStore keyStore1 = KeyStore.getInstance(defaultType);
 
 			FileInputStream fileInputStream1 = new FileInputStream("D:\\ssl\\tclient.ks");
