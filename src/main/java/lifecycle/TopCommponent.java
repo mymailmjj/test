@@ -27,7 +27,7 @@ public class TopCommponent extends AbstractTopComonent{
 		super.initInner();
 		System.out.println("TopCommponent initInner");
 		if(componentA!=null){
-			componentA.start();
+			componentA.init();
 		}
 	}
 
@@ -35,6 +35,9 @@ public class TopCommponent extends AbstractTopComonent{
 	protected void startInner() {
 		super.startInner();
 		System.out.println("TopCommponent startInner");
+		if(componentA!=null){
+			componentA.start();
+		}
 	}
 
 	@Override

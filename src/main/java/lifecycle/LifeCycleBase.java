@@ -8,19 +8,16 @@ package lifecycle;
  * 
  */
 public abstract class LifeCycleBase implements LifeCycle {
-	
-	
+
 	private LifeCycleSupport lifeCycleSupport = new LifeCycleSupport(this);
-	
-	
-	public void setStatus(LifeStatus status){
+
+	public void setStatus(LifeStatus status) {
 		this.lifeStatus = status;
 	}
-	
-	private LifeStatus lifeStatus = LifeStatus.NEW;
-	
-	
-	public LifeStatus getStatus(){
+
+	protected LifeStatus lifeStatus = LifeStatus.NEW;
+
+	public LifeStatus getStatus() {
 		return this.lifeStatus;
 	}
 
@@ -32,11 +29,15 @@ public abstract class LifeCycleBase implements LifeCycle {
 	}
 
 	public void start() {
-		if(this.lifeStatus!=LifeStatus.NEW){
-			setStatus(LifeStatus.NEW);
+
+		if (!this.lifeStatus.equals(LifeStatus.NEW)
+				&& !this.lifeStatus.equals(LifeStatus.INITIZED)) {
+			throw new IllegalStateException("状态不正确");
 		}
-		
-		init();
+
+		if (this.lifeStatus.equals(LifeStatus.NEW)) {
+			init();
+		}
 		setStatus(LifeStatus.BEFORE_START);
 		startInner();
 		setStatus(LifeStatus.STARTED);
@@ -47,21 +48,21 @@ public abstract class LifeCycleBase implements LifeCycle {
 		setStatus(LifeStatus.BEFORE_DESTROY);
 		destroyInner();
 		setStatus(LifeStatus.DESTROYED);
-		
+
 	}
-	
-	public void addLifeCycleListener(LifeCycleListener lifeCycleListener){
+
+	public void addLifeCycleListener(LifeCycleListener lifeCycleListener) {
 		lifeCycleSupport.addListener(lifeCycleListener);
 	}
-	
-	public void fireLifeCycleEvent(String type){
+
+	public void fireLifeCycleEvent(String type) {
 		lifeCycleSupport.fireLifeCycleEvent(type);
 	}
-	
+
 	protected abstract void initInner();
 
 	protected abstract void startInner();
-	
+
 	protected abstract void destroyInner();
 
 }
