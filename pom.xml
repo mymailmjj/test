@@ -63,6 +63,13 @@
 		</dependency>
 		<!-- active mq mqtt client end -->
 
+		<!-- active mq stomp client begin -->
+		<dependency>
+			<groupId>org.fusesource.stompjms</groupId>
+			<artifactId>stompjms-client</artifactId>
+			<version>1.19</version>
+		</dependency>
+		<!-- active mq stomp client end -->
 
 	</dependencies>
 </project>
