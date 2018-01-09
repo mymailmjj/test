@@ -14,7 +14,7 @@ import org.apache.qpid.jms.JmsConnectionFactory;
  * @author cango
  *
  */
-public class MainClient2 {
+public class MainAmqpPublisher {
 
 	public static void main(String[] args) throws Exception {
 

@@ -16,7 +16,7 @@ import org.apache.qpid.jms.JmsConnectionFactory;
  * @author cango
  * 
  */
-public class MainClient1 {
+public class MainAmqpReceiver {
 
 	public static void main(String[] args) throws JMSException {
 
