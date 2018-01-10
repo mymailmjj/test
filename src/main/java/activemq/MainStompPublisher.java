@@ -16,6 +16,7 @@ import org.fusesource.stomp.jms.StompJmsConnectionFactory;
 import org.fusesource.stomp.jms.StompJmsDestination;
 
 /**
+ * stomp publisher
  * @author cango
  *
  */

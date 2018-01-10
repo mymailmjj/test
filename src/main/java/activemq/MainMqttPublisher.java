@@ -10,6 +10,11 @@ import org.fusesource.mqtt.client.FutureConnection;
 import org.fusesource.mqtt.client.MQTT;
 import org.fusesource.mqtt.client.QoS;
 
+/**
+ * mqtt 发送消息
+ * @author cango
+ *
+ */
 public class MainMqttPublisher {
 
 	public static void main(String[] args) throws Exception {

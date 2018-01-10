@@ -28,7 +28,7 @@ public class MainAmqpReceiver {
 		int port = 5672;
 
 		String connectionURI = "amqp://" + host + ":" + port;
-		String destinationName = arg(args, 0, "topic://event");
+		String destinationName = "topic://event";
 
 		JmsConnectionFactory factory = new JmsConnectionFactory(connectionURI);
 
@@ -89,17 +89,4 @@ public class MainAmqpReceiver {
 		}
 	}
 
-	private static String env(String key, String defaultValue) {
-		String rc = System.getenv(key);
-		if (rc == null)
-			return defaultValue;
-		return rc;
-	}
-
-	private static String arg(String[] args, int index, String defaultValue) {
-		if (index < args.length)
-			return args[index];
-		else
-			return defaultValue;
-	}
 }

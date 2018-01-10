@@ -3,6 +3,11 @@ package activemq;
 import org.fusesource.hawtbuf.*;
 import org.fusesource.mqtt.client.*;
 
+/**
+ * mqtt 接受
+ * @author cango
+ *
+ */
 public class MainMqttReceiver {
 
 	public static void main(String[] args) throws Exception {
