@@ -34,8 +34,8 @@ public class MainAmqpReceiver {
 
 		Connection connection = factory.createConnection(user, password);
 		connection.start();
-		Session session = connection.createSession(false,
-				Session.AUTO_ACKNOWLEDGE);
+		Session session = connection.createSession(true,
+				Session.CLIENT_ACKNOWLEDGE);
 
 		Destination destination = null;
 		if (destinationName.startsWith(TOPIC_PREFIX)) {
@@ -86,6 +86,8 @@ public class MainAmqpReceiver {
 				System.out
 						.println("Unexpected message type: " + msg.getClass());
 			}
+			
+			session.commit();
 		}
 	}
 

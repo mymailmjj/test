@@ -42,8 +42,8 @@ public class MainAmqpPublisher {
 		Connection connection = factory.createConnection(user, password);
 		connection.start();
 
-		Session session = connection.createSession(false,
-				Session.AUTO_ACKNOWLEDGE);
+		Session session = connection.createSession(true,
+				Session.CLIENT_ACKNOWLEDGE);
 
 		Destination destination = null;
 		if (destinationName.startsWith(TOPIC_PREFIX)) {
@@ -60,12 +60,27 @@ public class MainAmqpPublisher {
 			TextMessage msg = session.createTextMessage("#:" + i);
 			msg.setIntProperty("id", i);
 			producer.send(msg);
+			
+			if((i%50)==0) {
+				session.commit();
+			}
+			
 			if ((i % 1000) == 0) {
 				System.out.println(String.format("Sent %d messages", i));
 			}
 		}
+		
 
+		System.out.println("第一阶段提交了");
+		
+		Thread.sleep(1000 * 3);
+		
 		producer.send(session.createTextMessage("SHUTDOWN"));
+		
+		session.commit();
+		
+		System.out.println("第二阶段提交了");
+		
 		Thread.sleep(1000 * 3);
 		connection.close();
 		System.exit(0);
