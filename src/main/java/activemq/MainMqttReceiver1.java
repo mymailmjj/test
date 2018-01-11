@@ -5,10 +5,11 @@ import org.fusesource.mqtt.client.*;
 
 /**
  * mqtt 接受
+ * 
  * @author cango
- *
+ * 
  */
-public class MainMqttReceiver {
+public class MainMqttReceiver1 {
 
 	public static void main(String[] args) throws Exception {
 
@@ -16,7 +17,7 @@ public class MainMqttReceiver {
 		String password = "password";
 		String host = "localhost";
 		int port = 1883;
-		final String destination = arg(args, 0, "/topic/event");
+		final String destination = "/topic/event";
 
 		MQTT mqtt = new MQTT();
 		mqtt.setHost(host, port);
@@ -24,6 +25,7 @@ public class MainMqttReceiver {
 		mqtt.setPassword(password);
 
 		final CallbackConnection connection = mqtt.callbackConnection();
+
 		connection.listener(new org.fusesource.mqtt.client.Listener() {
 			long count = 0;
 			long start = System.currentTimeMillis();
@@ -44,8 +46,7 @@ public class MainMqttReceiver {
 				if ("SHUTDOWN".equals(body)) {
 					long diff = System.currentTimeMillis() - start;
 					System.out.println(String.format(
-							"Received %d in %.2f seconds", count,
-							(1.0 * diff / 1000.0)));
+							"Received %d in %.2f seconds", count, (1.0 * diff / 1000.0)));
 					connection.disconnect(new Callback<Void>() {
 						public void onSuccess(Void value) {
 							System.exit(0);
@@ -69,11 +70,13 @@ public class MainMqttReceiver {
 				ack.run();
 			}
 		});
+
 		connection.connect(new Callback<Void>() {
 			public void onSuccess(Void value) {
 				Topic[] topics = { new Topic(destination, QoS.AT_LEAST_ONCE) };
 				connection.subscribe(topics, new Callback<byte[]>() {
 					public void onSuccess(byte[] qoses) {
+						System.out.println(new String(qoses));
 					}
 
 					public void onFailure(Throwable value) {
@@ -94,20 +97,6 @@ public class MainMqttReceiver {
 			while (true)
 				Listener.class.wait();
 		}
-	}
-
-	private static String env(String key, String defaultValue) {
-		String rc = System.getenv(key);
-		if (rc == null)
-			return defaultValue;
-		return rc;
-	}
-
-	private static String arg(String[] args, int index, String defaultValue) {
-		if (index < args.length)
-			return args[index];
-		else
-			return defaultValue;
 	}
 
 }

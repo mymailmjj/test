@@ -28,7 +28,7 @@ public class MainMqttPublisher {
 		int messages = 10000;
 		int size = 256;
 
-		String DATA = "abcdefghijklmnopqrstuvwxyz";
+		String DATA = "mqtt client publish messages";
 		String body = "";
 		for (int i = 0; i < size; i++) {
 			body += DATA.charAt(i % DATA.length());
@@ -42,7 +42,7 @@ public class MainMqttPublisher {
 
 		FutureConnection connection = mqtt.futureConnection();
 		connection.connect().await();
-
+		
 		final LinkedList<Future<Void>> queue = new LinkedList<Future<Void>>();
 		UTF8Buffer topic = new UTF8Buffer(destination);
 		for (int i = 1; i <= messages; i++) {
@@ -66,6 +66,8 @@ public class MainMqttPublisher {
 
 		queue.add(connection.publish(topic, new AsciiBuffer("SHUTDOWN"),
 				QoS.AT_LEAST_ONCE, false));
+		
+		
 		while (!queue.isEmpty()) {
 			queue.removeFirst().await();
 		}

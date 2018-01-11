@@ -11,6 +11,9 @@ import org.apache.qpid.jms.JmsConnectionFactory;
 
 /**
  * 发送的客户端
+ * amqp使用队列发送的时候，如果客户端设置持久化，
+ * 则服务器会保留消息，直到接收方上线后发送
+ * 
  * @author cango
  *
  */
@@ -26,12 +29,14 @@ public class MainAmqpPublisher {
 		int port = 5672;
 
 		String connectionURI = "amqp://" + host + ":" + port;
-		String destinationName = "topic://event";
+		//String destinationName = "topic://event";
 
-		int messages = 10000;
+		String destinationName = "slimsmart.queue.test";
+		
+		int messages = 100;
 		int size = 256;
 
-		String DATA = "abcdefghijklmnopqrstuvwxyz";
+		String DATA = "amqp publish";
 		String body = "";
 		for (int i = 0; i < size; i++) {
 			body += DATA.charAt(i % DATA.length());
@@ -52,15 +57,17 @@ public class MainAmqpPublisher {
 		} else {
 			destination = session.createQueue(destinationName);
 		}
-
+		
 		MessageProducer producer = session.createProducer(destination);
-		producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-
+		
+		//设置持久化,选择持久化则服务器会保留消息，直到接收方上线
+		producer.setDeliveryMode(DeliveryMode.PERSISTENT);
+		
 		for (int i = 1; i <= messages; i++) {
-			TextMessage msg = session.createTextMessage("#:" + i);
+			TextMessage msg = session.createTextMessage("#:" + i+"\t"+body);
 			msg.setIntProperty("id", i);
 			producer.send(msg);
-			if ((i % 1000) == 0) {
+			if ((i % 10) == 0) {
 				System.out.println(String.format("Sent %d messages", i));
 			}
 		}

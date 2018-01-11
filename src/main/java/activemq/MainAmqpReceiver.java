@@ -28,8 +28,9 @@ public class MainAmqpReceiver {
 		int port = 5672;
 
 		String connectionURI = "amqp://" + host + ":" + port;
-		String destinationName = "topic://event";
+		//String destinationName = "topic://event";
 
+		String destinationName = "slimsmart.queue.test";
 		JmsConnectionFactory factory = new JmsConnectionFactory(connectionURI);
 
 		Connection connection = factory.createConnection(user, password);
@@ -46,6 +47,7 @@ public class MainAmqpReceiver {
 		}
 
 		MessageConsumer consumer = session.createConsumer(destination);
+		
 		long start = System.currentTimeMillis();
 		long count = 1;
 		System.out.println("Waiting for messages...");
@@ -75,9 +77,9 @@ public class MainAmqpReceiver {
 
 					if (count == 1) {
 						start = System.currentTimeMillis();
-					} else if (count % 1000 == 0) {
+					} else if (count % 10 == 0) {
 						System.out.println(String.format(
-								"Received %d messages.", count));
+								"Received %d messages.", count)+"\tbody:"+body);
 					}
 					count++;
 				}
