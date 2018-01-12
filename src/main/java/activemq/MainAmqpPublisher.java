@@ -61,13 +61,13 @@ public class MainAmqpPublisher {
 		MessageProducer producer = session.createProducer(destination);
 		
 		//设置持久化,选择持久化则服务器会保留消息，直到接收方上线
-		producer.setDeliveryMode(DeliveryMode.PERSISTENT);
+		producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 		
 		for (int i = 1; i <= messages; i++) {
 			TextMessage msg = session.createTextMessage("#:" + i+"\t"+body);
 			msg.setIntProperty("id", i);
 			producer.send(msg);
-			if ((i % 1000) == 0) {
+			if ((i % 10) == 0) {
 				System.out.println(String.format("Sent %d messages", i));
 			}
 		}

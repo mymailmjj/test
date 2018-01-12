@@ -26,7 +26,7 @@ public class MainActiveMQPublisher {
 		activeMQConnectionFactory.setBrokerURL(connectionURI);
 		
 		ActiveMQConnection connection = (ActiveMQConnection) activeMQConnectionFactory.createConnection(user, password);
-
+		
 		Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 		
 		Destination destination = session.createQueue("dist");
