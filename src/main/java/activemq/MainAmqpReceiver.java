@@ -28,9 +28,9 @@ public class MainAmqpReceiver {
 		int port = 5672;
 
 		String connectionURI = "amqp://" + host + ":" + port;
-		//String destinationName = "topic://event";
+		String destinationName = "topic://event";
 
-		String destinationName = "slimsmart.queue.test";
+//		String destinationName = "slimsmart.queue.test";
 		JmsConnectionFactory factory = new JmsConnectionFactory(connectionURI);
 
 		Connection connection = factory.createConnection(user, password);
@@ -88,6 +88,7 @@ public class MainAmqpReceiver {
 				System.out
 						.println("Unexpected message type: " + msg.getClass());
 			}
+			
 		}
 	}
 

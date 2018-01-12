@@ -29,9 +29,9 @@ public class MainAmqpPublisher {
 		int port = 5672;
 
 		String connectionURI = "amqp://" + host + ":" + port;
-		//String destinationName = "topic://event";
+		String destinationName = "topic://event";
 
-		String destinationName = "slimsmart.queue.test";
+//		String destinationName = "slimsmart.queue.test";
 		
 		int messages = 100;
 		int size = 256;
@@ -67,12 +67,16 @@ public class MainAmqpPublisher {
 			TextMessage msg = session.createTextMessage("#:" + i+"\t"+body);
 			msg.setIntProperty("id", i);
 			producer.send(msg);
-			if ((i % 10) == 0) {
+			if ((i % 1000) == 0) {
 				System.out.println(String.format("Sent %d messages", i));
 			}
 		}
-
+		
+		Thread.sleep(1000 * 3);
+		
 		producer.send(session.createTextMessage("SHUTDOWN"));
+		
+		
 		Thread.sleep(1000 * 3);
 		connection.close();
 		System.exit(0);
