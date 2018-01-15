@@ -27,7 +27,7 @@ public class MainAmqpReceiver {
 		String host = "localhost";
 		int port = 5672;
 
-		String connectionURI = "amqp://" + host + ":" + port;
+		String connectionURI = "amqp://" + host + ":" + port+"?amqp:localIdleTimeout=0";
 		String destinationName = "topic://event";
 
 //		String destinationName = "slimsmart.queue.test";

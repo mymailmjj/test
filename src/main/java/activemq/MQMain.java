@@ -14,7 +14,7 @@ public class MQMain {
 		
 		
 		//-Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005
-		String[] s = {"start"};
+		String[] s = {"start","xbean:activemq.xml"};
 		System.setProperty("java.io.tmpdir", "D://temp");
 		
 		main.main(s);
