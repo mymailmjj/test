@@ -41,6 +41,7 @@ public class HttpHeartServer {
 				ByteBuffer.allocateDirect(BUFFER_SIZE));
 	}
 
+	//这里对用户进入的请求进行处理
 	public static void handleRead(SelectionKey key) throws IOException {
 		SocketChannel sc = (SocketChannel) key.channel();
 		ByteBuffer buf = (ByteBuffer) key.attachment();

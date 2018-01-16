@@ -27,7 +27,6 @@ public class HttpHeartClient {
 
 	private void init() {
 
-		SocketChannel socketChannel = null;
 		try {
 			socketChannel = SocketChannel.open();
 			socketChannel.configureBlocking(false);
@@ -37,19 +36,15 @@ public class HttpHeartClient {
 				
 				countDownLatch.countDown();
 				
-				new Thread(new ServerIdleCheck()).start();
+				Thread thread = new Thread(new ServerIdleCheck());
+				
+				thread.setDaemon(true);
+				
+				thread.start();
 			
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
-		} finally {
-			try {
-				if (socketChannel != null) {
-					socketChannel.close();
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
 		}
 
 	}
@@ -61,6 +56,29 @@ public class HttpHeartClient {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		
+		try {
+			TimeUnit.SECONDS.sleep(10);
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
+		
+		byte[] bytes = str.getBytes();
+		
+		ByteBuffer buffer = ByteBuffer.allocate(bytes.length);
+		
+		buffer.put(bytes);
+		
+		buffer.flip();
+		
+		try {
+			socketChannel.write(buffer);
+			System.out.println("消息已经发送");
+			socketChannel.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 
 	}
 
@@ -88,7 +106,7 @@ public class HttpHeartClient {
 					buffer.clear();
 
 					// 每隔三秒钟发送一次
-					TimeUnit.SECONDS.sleep(3);
+					TimeUnit.SECONDS.sleep(2);
 
 					long bytesRead = socketChannel.read(buffer);
 					while (bytesRead > 0) {
@@ -116,6 +134,10 @@ public class HttpHeartClient {
 	 * @param args
 	 */
 	public static void main(String[] args) {
+		
+		HttpHeartClient httpHeartClient = new HttpHeartClient(8081);
+		
+		httpHeartClient.send("abcd");
 
 	}
 
