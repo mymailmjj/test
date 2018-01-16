@@ -1,5 +1,7 @@
 package activemq;
 
+import java.util.concurrent.TimeUnit;
+
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
@@ -20,12 +22,14 @@ import org.apache.qpid.jms.JmsConnectionFactory;
 public class MainAmqpPublisher {
 
 	public static void main(String[] args) throws Exception {
+		
+		long currentTimeMillis = System.currentTimeMillis();
 
 		final String TOPIC_PREFIX = "topic://";
 
-		String user = "admin";
+		String user = "system";
 		String password = "password";
-		String host = "localhost";
+		String host = "39.107.103.45";
 		int port = 5672;
 
 		String connectionURI = "amqp://" + host + ":" + port;
@@ -33,7 +37,7 @@ public class MainAmqpPublisher {
 
 //		String destinationName = "slimsmart.queue.test";
 		
-		int messages = 100;
+		int messages = 2000;
 		int size = 256;
 
 		String DATA = "amqp publish";
@@ -45,6 +49,7 @@ public class MainAmqpPublisher {
 		JmsConnectionFactory factory = new JmsConnectionFactory(connectionURI);
 
 		Connection connection = factory.createConnection(user, password);
+		
 		connection.start();
 
 		Session session = connection.createSession(false,
@@ -61,16 +66,20 @@ public class MainAmqpPublisher {
 		MessageProducer producer = session.createProducer(destination);
 		
 		//设置持久化,选择持久化则服务器会保留消息，直到接收方上线
-		producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+		producer.setDeliveryMode(DeliveryMode.PERSISTENT);
 		
 		for (int i = 1; i <= messages; i++) {
 			TextMessage msg = session.createTextMessage("#:" + i+"\t"+body);
 			msg.setIntProperty("id", i);
 			producer.send(msg);
-			if ((i % 10) == 0) {
+			if ((i % 100) == 0) {
 				System.out.println(String.format("Sent %d messages", i));
 			}
 		}
+		
+		long now = System.currentTimeMillis();
+		
+		System.out.println("cost:"+(now-currentTimeMillis)/1000+"\tseconds");
 		
 		Thread.sleep(1000 * 3);
 		
@@ -78,6 +87,9 @@ public class MainAmqpPublisher {
 		
 		
 		Thread.sleep(1000 * 3);
+		
+	
+		
 		connection.close();
 		System.exit(0);
 	}

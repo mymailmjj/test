@@ -13,9 +13,9 @@ public class MainMqttReceiver2 {
 
 	public static void main(String[] args) throws Exception {
 
-		String user = "admin";
+		String user = "system";
 		String password = "password";
-		String host = "localhost";
+		String host = "39.107.103.45";
 		int port = 1883;
 		final String destination = "/topic/event";
 
@@ -63,7 +63,7 @@ public class MainMqttReceiver2 {
 					}
 					if (count % 1000 == 0) {
 						System.out.println(String.format(
-								"Received %d messages.", count));
+								"Received %d messages.", count)+"\t"+body);
 					}
 					count++;
 				}
