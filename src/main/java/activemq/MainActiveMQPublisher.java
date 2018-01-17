@@ -33,6 +33,7 @@ public class MainActiveMQPublisher {
 		
 		MessageProducer messageProducer = session.createProducer(destination);
 		
+		
 //		messageProducer.send(message);
 		
 		

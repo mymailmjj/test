@@ -26,9 +26,9 @@ public class MainStompReceiver {
 
     public static void main(String []args) throws JMSException {
 
-        String user = "admin";
+        String user = "system";
         String password = "password";
-        String host = "localhost";
+        String host = "39.107.103.45";
         int port = 61613;
         String destination = "/topic/event";
 
@@ -61,7 +61,7 @@ public class MainStompReceiver {
                     if( count == 0 ) {
                         start = System.currentTimeMillis();
                     }
-                    if( count % 1000 == 0 ) {
+                    if( count % 100 == 0 ) {
                         System.out.println(String.format("Received %d messages.", count));
                     }
                     count ++;

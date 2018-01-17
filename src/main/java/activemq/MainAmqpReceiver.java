@@ -22,9 +22,9 @@ public class MainAmqpReceiver {
 
 		final String TOPIC_PREFIX = "topic://";
 
-		String user = "admin";
+		String user = "system";
 		String password = "password";
-		String host = "localhost";
+		String host = "39.107.103.45";
 		int port = 5672;
 
 		String connectionURI = "amqp://" + host + ":" + port+"?amqp:localIdleTimeout=0";

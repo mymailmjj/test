@@ -18,14 +18,16 @@ import org.fusesource.mqtt.client.QoS;
 public class MainMqttPublisher {
 
 	public static void main(String[] args) throws Exception {
+		
+		long currentTimeMillis = System.currentTimeMillis();
 
-		String user = "admin";
+		String user = "system";
 		String password = "password";
-		String host = "localhost";
+		String host = "39.107.103.45";
 		int port = 1883;
 		final String destination = "/topic/event";
 
-		int messages = 10000;
+		int messages = 2000;
 		int size = 256;
 
 		String DATA = "mqtt client publish messages";
@@ -50,7 +52,7 @@ public class MainMqttPublisher {
 			// Send the publish without waiting for it to complete. This allows
 			// us
 			// to send multiple message without blocking..
-			queue.add(connection.publish(topic, msg, QoS.AT_LEAST_ONCE, false));
+			queue.add(connection.publish(topic, msg, QoS.AT_MOST_ONCE, false));
 
 			// Eventually we start waiting for old publish futures to complete
 			// so that we don't create a large in memory buffer of outgoing
@@ -71,6 +73,11 @@ public class MainMqttPublisher {
 		while (!queue.isEmpty()) {
 			queue.removeFirst().await();
 		}
+		
+		long now = System.currentTimeMillis();
+			
+		System.out.println("cost:"+(now-currentTimeMillis)/1000+"\tseconds");
+		
 
 		connection.disconnect().await();
 

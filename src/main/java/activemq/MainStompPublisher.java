@@ -23,14 +23,16 @@ import org.fusesource.stomp.jms.StompJmsDestination;
 public class MainStompPublisher {
 	
 	 public static void main(String []args) throws JMSException {
+		 
+		 	long currentTimeMillis = System.currentTimeMillis();
 
-	        String user = "admin";
+	        String user = "system";
 	        String password = "password";
-	        String host = "localhost";
+	        String host = "39.107.103.45";
 	        int port = 61613;
 	        String destination = "/topic/event";
 
-	        int messages = 10000;
+	        int messages = 2000;
 	        int size = 256;
 
 	        String DATA = "abcdefghijklmnopqrstuvwxyz";
@@ -47,17 +49,21 @@ public class MainStompPublisher {
 	        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 	        Destination dest = new StompJmsDestination(destination);
 	        MessageProducer producer = session.createProducer(dest);
-	        producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+	        producer.setDeliveryMode(DeliveryMode.PERSISTENT);
 
 	        for( int i=1; i <= messages; i ++) {
 	            TextMessage msg = session.createTextMessage(body);
 	            msg.setIntProperty("id", i);
 	            producer.send(msg);
-	            if( (i % 1000) == 0) {
+	            if( (i % 100) == 0) {
 	                System.out.println(String.format("Sent %d messages", i));
 	            }
 	        }
 
+	    	long now = System.currentTimeMillis();
+			
+			System.out.println("cost:"+(now-currentTimeMillis)/1000+"\tseconds");
+	        
 	        producer.send(session.createTextMessage("SHUTDOWN"));
 	        connection.close();
 
