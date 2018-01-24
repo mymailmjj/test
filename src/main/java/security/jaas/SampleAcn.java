@@ -13,9 +13,6 @@ public class SampleAcn {
 
     public static void main(String[] args) throws URISyntaxException, MalformedURLException {
         
-        
-        
-        
         URL resource = SampleAcn.class.getResource("config/sample_jaas.config");
         
         URL url = resource;
@@ -52,7 +49,8 @@ public class SampleAcn {
 
             }
         }
-
+        
+        
         // did they fail three times?
         if (i == 3) {
             System.out.println("Sorry");

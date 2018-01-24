@@ -138,7 +138,6 @@ public class SampleLoginModule implements LoginModule {
             succeeded = true;
             return true;
         } else {
-
             // authentication failed -- clean out state
             if (debug)
                 System.out.println("\t\t[SampleLoginModule] " +

@@ -1,8 +1,13 @@
+/**
+ * 
+ */
 package security.encryption;
 
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
+import java.security.NoSuchProviderException;
+import java.security.Security;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
@@ -10,72 +15,44 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.IvParameterSpec;
 
 /**
- * 关于DES效率的研究
- * jdk中默认的对称加密解密方法效率问题
+ * 使用BouncyCastle库进行AES加密
+ * 效率情况
  * 
  * 加密文本长度：2558
-    秘钥长度：12
     加密次数：10000
-  finishtime:438毫秒
+    finishtime:9毫秒
+
  * 
  * @author cango
  *
  */
-public class EncryptionUtils {
+public class BCEncryptioinUtils {
     
-    private static Cipher cipher;
+    static Cipher ciphter;
     
     private static StringBuffer buffer;
     
     private static String str;
     
-    private static String KEY = "MU@@jian2935";
-    
-    
-    static final String KEY_ALGORITHM = "AES";  
-    static final String CIPHER_ALGORITHM_ECB = "AES/ECB/PKCS5Padding";  
-    static final String CIPHER_ALGORITHM_CBC = "AES/CBC/PKCS5Padding"; 
-    /*  
-     * AES/CBC/NoPadding 要求 
-     * 密钥必须是16字节长度的；Initialization vector (IV) 必须是16字节 
-     * 待加密内容的字节长度必须是16的倍数，如果不是16的倍数，就会出如下异常： 
-     * javax.crypto.IllegalBlockSizeException: Input length not multiple of 16 bytes 
-     *  
-     *  由于固定了位数，所以对于被加密数据有中文的, 加、解密不完整 
-     *   
-     *  可 以看到，在原始数据长度为16的整数n倍时，假如原始数据长度等于16*n，则使用NoPadding时加密后数据长度等于16*n， 
-     *  其它情况下加密数据长 度等于16*(n+1)。在不足16的整数倍的情况下，假如原始数据长度等于16*n+m[其中m小于16]， 
-     *  除了NoPadding填充之外的任何方 式，加密数据长度都等于16*(n+1). 
-     */  
-    static final String CIPHER_ALGORITHM_CBC_NoPadding = "AES/CBC/NoPadding";   
-    
     static{
         
-        SecureRandom secureRandom = new SecureRandom();
+        Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
         
         try {
-           
-          /*  DESKeySpec desKeySpec = new DESKeySpec(KEY.getBytes(),3);  //默认是8
+            byte[] ivBytes = new byte[] { 0x00, 0x00, 0x00, 0x01, 0x04, 0x05, 0x06, 0x07, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 };
             
-            System.out.println("秘钥长度:"+desKeySpec.DES_KEY_LEN+"字节");
+            KeyGenerator keyGenerator = KeyGenerator.getInstance("AES", "BC");
             
-            SecretKeyFactory secretKeyFactory = SecretKeyFactory.getInstance("DES");
-            
-             SecretKey secretKey = secretKeyFactory.generateSecret(desKeySpec);
-            
-            */
-            
-            KeyGenerator keyGenerator = KeyGenerator.getInstance("DES");
-            
-            keyGenerator.init(56, secureRandom);  //DES 这里只能用56位的
+            keyGenerator.init(192);
             
             SecretKey secretKey = keyGenerator.generateKey();
             
-            cipher = Cipher.getInstance("DES");
+            ciphter = Cipher.getInstance("AES/CTR/NoPadding", "BC");
             
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey, secureRandom);
+            ciphter.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(ivBytes));
             
             buffer = new StringBuffer();
             
@@ -83,109 +60,55 @@ public class EncryptionUtils {
             
             str = buffer.toString();
             
-            
+        } catch (InvalidKeyException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         } catch (NoSuchAlgorithmException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (NoSuchProviderException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         } catch (NoSuchPaddingException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-        } catch (InvalidKeyException e) {
+        } catch (InvalidAlgorithmParameterException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-        } 
+        }
         
     }
     
     
-    public static byte[] encyrtStringWithDes(String str){
+    public static byte[] encryptStringWithAES(String str){
         
+        byte[] doFinal;
         try {
-            byte[] doFinal = cipher.doFinal(str.getBytes());
+            doFinal = ciphter.doFinal("ABCDEF".getBytes());
+//            System.out.println(Arrays.toString(doFinal));
             return doFinal;
         } catch (IllegalBlockSizeException e) {
+            // TODO Auto-generated catch block
             e.printStackTrace();
         } catch (BadPaddingException e) {
+            // TODO Auto-generated catch block
             e.printStackTrace();
         }
+        
         
         return null;
     }
     
-    
+
     /**
-     * 使用AES加密
-     * @param str
-     * @return
-     */
-    public static byte[] encryptStringWithAes(String str){
-        
-        try {
-            SecureRandom secureRandom = new SecureRandom();
-            KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
-            keyGenerator.init(128,secureRandom);
-            SecretKey generateKey = keyGenerator.generateKey();
-            Cipher cipher = Cipher.getInstance(CIPHER_ALGORITHM_ECB);
-            cipher.init(Cipher.ENCRYPT_MODE, generateKey);
-            byte[] doFinal = cipher.doFinal(str.getBytes());
-            return doFinal;
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-        } catch (NoSuchPaddingException e) {
-            e.printStackTrace();
-        } catch (InvalidKeyException e) {
-            e.printStackTrace();
-        } catch (IllegalBlockSizeException e) {
-            e.printStackTrace();
-        } catch (BadPaddingException e) {
-            e.printStackTrace();
-        }
-        
-        return null;
-    }
-    
-    
-    /**
-     * 得到的一些结果
-     * 加密文本长度：2558
-             秘钥长度：12
-             加密次数：10000
-       finishtime:1437毫秒
-     * 
      * @param args
      */
     public static void main(String[] args) {
-        
-     /*   
-      * DES 测试案例
-      * int encynum = 10000;
-        
-        System.out.println("加密文本长度："+str.length());
-        
-        System.out.println("秘钥长度："+KEY.length());
-        
-        System.out.println("加密次数："+encynum);
-        
-        long current = System.currentTimeMillis();
-        
-        
-        for(int i = 0; i < encynum; i++){
-            
-            encyrtStringWithDes(str);
-            
-        }
-        
-        long now = System.currentTimeMillis();
-        
-        System.out.println("finishtime:"+(now-current)+"毫秒");*/
-        
         
         int encynum = 10000;
         
         System.out.println("加密文本长度："+str.length());
         
-        System.out.println("秘钥长度："+KEY.length());
-        
         System.out.println("加密次数："+encynum);
         
         long current = System.currentTimeMillis();
@@ -193,16 +116,16 @@ public class EncryptionUtils {
         
         for(int i = 0; i < encynum; i++){
             
-            encryptStringWithAes(str);
+            encryptStringWithAES(str);
             
         }
         
         long now = System.currentTimeMillis();
         
         System.out.println("finishtime:"+(now-current)+"毫秒");
+
         
         
     }
-    
 
 }

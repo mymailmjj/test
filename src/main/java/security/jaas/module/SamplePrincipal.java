@@ -5,15 +5,18 @@ import java.security.Principal;
 public class SamplePrincipal implements Principal, java.io.Serializable {
     
     /**
+     * 
+     */
+    private static final long serialVersionUID = 1L;
+    /**
      * @serial
      */
     private String name;
 
     public SamplePrincipal(String username) {
+        this.name = username;
         if (name == null)
             throw new NullPointerException("illegal null input");
-
-        this.name = name;
     }
 
     public String getName() {
