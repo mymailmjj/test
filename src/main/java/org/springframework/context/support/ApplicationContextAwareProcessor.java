@@ -21,7 +21,6 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEventPublisherAware;
-import org.springframework.context.MessageSourceAware;
 import org.springframework.context.ResourceLoaderAware;
 
 /**
@@ -62,9 +61,6 @@ class ApplicationContextAwareProcessor implements BeanPostProcessor {
 		}
 		if (bean instanceof ApplicationEventPublisherAware) {
 			((ApplicationEventPublisherAware) bean).setApplicationEventPublisher(this.applicationContext);
-		}
-		if (bean instanceof MessageSourceAware) {
-			((MessageSourceAware) bean).setMessageSource(this.applicationContext);
 		}
 		if (bean instanceof ApplicationContextAware) {
 			((ApplicationContextAware) bean).setApplicationContext(this.applicationContext);

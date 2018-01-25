@@ -52,15 +52,12 @@ public abstract class ApplicationObjectSupport implements ApplicationContextAwar
 	/** ApplicationContext this object runs in */
 	private ApplicationContext applicationContext;
 
-	/** MessageSourceAccessor for easy message access */
-	private MessageSourceAccessor messageSourceAccessor;
 
 
 	public final void setApplicationContext(ApplicationContext context) throws BeansException {
 		if (context == null && !isContextRequired()) {
 			// Reset internal context state.
 			this.applicationContext = null;
-			this.messageSourceAccessor = null;
 		}
 		else if (this.applicationContext == null) {
 			// Initialize with passed-in context.
@@ -69,7 +66,6 @@ public abstract class ApplicationObjectSupport implements ApplicationContextAwar
 						"Invalid application context: needs to be of type [" + requiredContextClass().getName() + "]");
 			}
 			this.applicationContext = context;
-			this.messageSourceAccessor = new MessageSourceAccessor(context);
 			initApplicationContext(context);
 		}
 		else {
@@ -141,19 +137,6 @@ public abstract class ApplicationObjectSupport implements ApplicationContextAwar
 					"ApplicationObjectSupport instance [" + this + "] does not run in an ApplicationContext");
 		}
 		return this.applicationContext;
-	}
-
-	/**
-	 * Return a MessageSourceAccessor for the application context
-	 * used by this object, for easy message access.
-	 * @throws IllegalStateException if not running in an ApplicationContext
-	 */
-	protected final MessageSourceAccessor getMessageSourceAccessor() throws IllegalStateException {
-		if (this.messageSourceAccessor == null && isContextRequired()) {
-			throw new IllegalStateException(
-					"ApplicationObjectSupport instance [" + this + "] does not run in an ApplicationContext");
-		}
-		return this.messageSourceAccessor;
 	}
 
 }

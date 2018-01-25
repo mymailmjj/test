@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -40,7 +39,6 @@ import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.beans.support.ResourceEditorRegistrar;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEvent;
@@ -48,12 +46,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.HierarchicalMessageSource;
 import org.springframework.context.Lifecycle;
-import org.springframework.context.MessageSource;
-import org.springframework.context.MessageSourceAware;
-import org.springframework.context.MessageSourceResolvable;
-import org.springframework.context.NoSuchMessageException;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.event.ApplicationEventMulticaster;
 import org.springframework.context.event.ContextClosedEvent;
@@ -119,13 +112,6 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		implements ConfigurableApplicationContext, DisposableBean {
 
 	/**
-	 * Name of the MessageSource bean in the factory.
-	 * If none is supplied, message resolution is delegated to the parent.
-	 * @see MessageSource
-	 */
-	public static final String MESSAGE_SOURCE_BEAN_NAME = "messageSource";
-
-	/**
 	 * Name of the ApplicationEventMulticaster bean in the factory.
 	 * If none is supplied, a default SimpleApplicationEventMulticaster is used.
 	 * @see org.springframework.context.event.ApplicationEventMulticaster
@@ -173,9 +159,6 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 
 	/** ResourcePatternResolver used by this context */
 	private ResourcePatternResolver resourcePatternResolver;
-
-	/** MessageSource we delegate our implementation of this interface to */
-	private MessageSource messageSource;
 
 	/** Helper class used in event publishing */
 	private ApplicationEventMulticaster applicationEventMulticaster;
@@ -359,19 +342,13 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				postProcessBeanFactory(beanFactory);
 
 				// Invoke factory processors registered as beans in the context.
-				invokeBeanFactoryPostProcessors(beanFactory);
+//				invokeBeanFactoryPostProcessors(beanFactory);
 
 				// Register bean processors that intercept bean creation.
-				registerBeanPostProcessors(beanFactory);
-
-				// Initialize message source for this context.
-				initMessageSource();
-
+//				registerBeanPostProcessors(beanFactory);
+			
 				// Initialize event multicaster for this context.
 				initApplicationEventMulticaster();
-
-				// Initialize other special beans in specific context subclasses.
-				onRefresh();
 
 				// Check for listener beans and register them.
 				registerListeners();
@@ -442,14 +419,10 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		// Tell the internal bean factory to use the context's class loader.
 		beanFactory.setBeanClassLoader(getClassLoader());
 
-		// Populate the bean factory with context-specific resource editors.
-		beanFactory.addPropertyEditorRegistrar(new ResourceEditorRegistrar(this));
-
 		// Configure the bean factory with context callbacks.
 		beanFactory.addBeanPostProcessor(new ApplicationContextAwareProcessor(this));
 		beanFactory.ignoreDependencyInterface(ResourceLoaderAware.class);
 		beanFactory.ignoreDependencyInterface(ApplicationEventPublisherAware.class);
-		beanFactory.ignoreDependencyInterface(MessageSourceAware.class);
 		beanFactory.ignoreDependencyInterface(ApplicationContextAware.class);
 
 		// BeanFactory interface not registered as resolvable type in a plain factory.
@@ -459,23 +432,6 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		beanFactory.registerResolvableDependency(ApplicationEventPublisher.class, this);
 		beanFactory.registerResolvableDependency(ApplicationContext.class, this);
 
-		// Detect a LoadTimeWeaver and prepare for weaving, if found.
-		if (beanFactory.containsBean(LOAD_TIME_WEAVER_BEAN_NAME) && JdkVersion.isAtLeastJava15()) {
-			// Register the (JDK 1.5 specific) LoadTimeWeaverAwareProcessor.
-			try {
-				Class ltwapClass = ClassUtils.forName(
-						"org.springframework.context.weaving.LoadTimeWeaverAwareProcessor",
-						AbstractApplicationContext.class.getClassLoader());
-				BeanPostProcessor ltwap = (BeanPostProcessor) BeanUtils.instantiateClass(ltwapClass);
-				((BeanFactoryAware) ltwap).setBeanFactory(beanFactory);
-				beanFactory.addBeanPostProcessor(ltwap);
-			}
-			catch (ClassNotFoundException ex) {
-				throw new IllegalStateException("Spring's LoadTimeWeaverAwareProcessor class is not available");
-			}
-			// Set a temporary ClassLoader for type matching.
-			beanFactory.setTempClassLoader(new ContextTypeMatchClassLoader(beanFactory.getBeanClassLoader()));
-		}
 	}
 
 	/**
@@ -614,40 +570,6 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 		for (Iterator it = postProcessors.iterator(); it.hasNext();) {
 			BeanPostProcessor postProcessor = (BeanPostProcessor) it.next();
 			beanFactory.addBeanPostProcessor(postProcessor);
-		}
-	}
-
-	/**
-	 * Initialize the MessageSource.
-	 * Use parent's if none defined in this context.
-	 */
-	protected void initMessageSource() {
-		ConfigurableListableBeanFactory beanFactory = getBeanFactory();
-		if (beanFactory.containsLocalBean(MESSAGE_SOURCE_BEAN_NAME)) {
-			this.messageSource = (MessageSource) beanFactory.getBean(MESSAGE_SOURCE_BEAN_NAME, MessageSource.class);
-			// Make MessageSource aware of parent MessageSource.
-			if (this.parent != null && this.messageSource instanceof HierarchicalMessageSource) {
-				HierarchicalMessageSource hms = (HierarchicalMessageSource) this.messageSource;
-				if (hms.getParentMessageSource() == null) {
-					// Only set parent context as parent MessageSource if no parent MessageSource
-					// registered already.
-					hms.setParentMessageSource(getInternalParentMessageSource());
-				}
-			}
-			if (logger.isDebugEnabled()) {
-				logger.debug("Using MessageSource [" + this.messageSource + "]");
-			}
-		}
-		else {
-			// Use empty MessageSource to be able to accept getMessage calls.
-			DelegatingMessageSource dms = new DelegatingMessageSource();
-			dms.setParentMessageSource(getInternalParentMessageSource());
-			this.messageSource = dms;
-			beanFactory.registerSingleton(MESSAGE_SOURCE_BEAN_NAME, this.messageSource);
-			if (logger.isDebugEnabled()) {
-				logger.debug("Unable to locate MessageSource with name '" + MESSAGE_SOURCE_BEAN_NAME +
-						"': using default [" + this.messageSource + "]");
-			}
 		}
 	}
 
@@ -970,44 +892,6 @@ public abstract class AbstractApplicationContext extends DefaultResourceLoader
 				((ConfigurableApplicationContext) getParent()).getBeanFactory() : (BeanFactory) getParent();
 	}
 
-
-	//---------------------------------------------------------------------
-	// Implementation of MessageSource interface
-	//---------------------------------------------------------------------
-
-	public String getMessage(String code, Object args[], String defaultMessage, Locale locale) {
-		return getMessageSource().getMessage(code, args, defaultMessage, locale);
-	}
-
-	public String getMessage(String code, Object args[], Locale locale) throws NoSuchMessageException {
-		return getMessageSource().getMessage(code, args, locale);
-	}
-
-	public String getMessage(MessageSourceResolvable resolvable, Locale locale) throws NoSuchMessageException {
-		return getMessageSource().getMessage(resolvable, locale);
-	}
-
-	/**
-	 * Return the internal MessageSource used by the context.
-	 * @return the internal MessageSource (never <code>null</code>)
-	 * @throws IllegalStateException if the context has not been initialized yet
-	 */
-	private MessageSource getMessageSource() throws IllegalStateException {
-		if (this.messageSource == null) {
-			throw new IllegalStateException("MessageSource not initialized - " +
-					"call 'refresh' before accessing messages via the context: " + this);
-		}
-		return this.messageSource;
-	}
-
-	/**
-	 * Return the internal message source of the parent context if it is an
-	 * AbstractApplicationContext too; else, return the parent context itself.
-	 */
-	protected MessageSource getInternalParentMessageSource() {
-		return (getParent() instanceof AbstractApplicationContext) ?
-		    ((AbstractApplicationContext) getParent()).messageSource : getParent();
-	}
 
 
 	//---------------------------------------------------------------------

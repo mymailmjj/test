@@ -35,11 +35,11 @@
 		</dependency>
 
 		<!-- active mq server begin -->
-		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-all</artifactId>
-			<version>5.15.2</version>
-		</dependency>
+		<!-- <dependency> -->
+		<!-- <groupId>org.apache.activemq</groupId> -->
+		<!-- <artifactId>activemq-all</artifactId> -->
+		<!-- <version>5.15.2</version> -->
+		<!-- </dependency> -->
 		<!-- active mq server end -->
 
 		<!-- active mq amqp client begin -->
@@ -115,10 +115,24 @@
 		</dependency>
 
 		<dependency>
-		    <groupId>commons-collections</groupId>
-		    <artifactId>commons-collections</artifactId>
-		    <version>3.2.1</version>
+			<groupId>commons-collections</groupId>
+			<artifactId>commons-collections</artifactId>
+			<version>3.2.1</version>
 		</dependency>
+
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+			<version>1.1.1</version>
+		</dependency>
+		
+		<dependency>
+		    <groupId>commons-pool</groupId>
+		    <artifactId>commons-pool</artifactId>
+		    <version>1.6</version>
+		</dependency>
+		
+
 
 
 	</dependencies>

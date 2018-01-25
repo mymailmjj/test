@@ -69,9 +69,7 @@ public abstract class CollectionFactory {
 					CollectionFactory.class.getClassLoader());
 
 	/** Whether the backport-concurrent library is present on the classpath */
-	private static final boolean backportConcurrentAvailable =
-			ClassUtils.isPresent("edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap",
-					CollectionFactory.class.getClassLoader());
+	private static final boolean backportConcurrentAvailable = false;
 
 
 	private static final Set approximableCollectionTypes = new HashSet(10);
@@ -126,11 +124,7 @@ public abstract class CollectionFactory {
 			logger.trace("Creating [java.util.concurrent.CopyOnWriteArraySet]");
 			return JdkConcurrentCollectionFactory.createCopyOnWriteArraySet();
 		}
-		else if (backportConcurrentAvailable) {
-			logger.trace("Creating [edu.emory.mathcs.backport.java.util.concurrent.CopyOnWriteArraySet]");
-			return BackportConcurrentCollectionFactory.createCopyOnWriteArraySet();
-		}
-		else {
+		 else {
 			throw new IllegalStateException("Cannot create CopyOnWriteArraySet - " +
 					"neither JDK 1.5 nor backport-concurrent available on the classpath");
 		}
@@ -194,12 +188,7 @@ public abstract class CollectionFactory {
 		if (JdkVersion.isAtLeastJava15()) {
 			logger.trace("Creating [java.util.concurrent.ConcurrentHashMap]");
 			return JdkConcurrentCollectionFactory.createConcurrentHashMap(initialCapacity);
-		}
-		else if (backportConcurrentAvailable) {
-			logger.trace("Creating [edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap]");
-			return BackportConcurrentCollectionFactory.createConcurrentHashMap(initialCapacity);
-		}
-		else {
+		}else {
 			logger.debug("Falling back to plain synchronized [java.util.HashMap] for concurrent map");
 			return Collections.synchronizedMap(new HashMap(initialCapacity));
 		}
@@ -220,12 +209,7 @@ public abstract class CollectionFactory {
 		if (JdkVersion.isAtLeastJava15()) {
 			logger.trace("Creating [java.util.concurrent.ConcurrentHashMap]");
 			return new JdkConcurrentHashMap(initialCapacity);
-		}
-		else if (backportConcurrentAvailable) {
-			logger.trace("Creating [edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap]");
-			return new BackportConcurrentHashMap(initialCapacity);
-		}
-		else {
+		}else {
 			throw new IllegalStateException("Cannot create ConcurrentHashMap - " +
 					"neither JDK 1.5 nor backport-concurrent available on the classpath");
 		}
@@ -329,22 +313,6 @@ public abstract class CollectionFactory {
 
 
 	/**
-	 * Actual creation of backport-concurrent Collections.
-	 * In separate inner class to avoid runtime dependency on the backport-concurrent library.
-	 */
-	private static abstract class BackportConcurrentCollectionFactory {
-
-		private static Set createCopyOnWriteArraySet() {
-			return new edu.emory.mathcs.backport.java.util.concurrent.CopyOnWriteArraySet();
-		}
-
-		private static Map createConcurrentHashMap(int initialCapacity) {
-			return new edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap(initialCapacity);
-		}
-	}
-
-
-	/**
 	 * ConcurrentMap adapter for the JDK ConcurrentHashMap class.
 	 */
 	private static class JdkConcurrentHashMap extends ConcurrentHashMap implements ConcurrentMap {
@@ -354,17 +322,5 @@ public abstract class CollectionFactory {
 		}
 	}
 
-
-	/**
-	 * ConcurrentMap adapter for the backport-concurrent ConcurrentHashMap class.
-	 */
-	private static class BackportConcurrentHashMap
-			extends edu.emory.mathcs.backport.java.util.concurrent.ConcurrentHashMap
-			implements ConcurrentMap {
-
-		public BackportConcurrentHashMap(int initialCapacity) {
-			super(initialCapacity);
-		}
-	}
 
 }

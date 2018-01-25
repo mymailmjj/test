@@ -53,8 +53,7 @@ import org.springframework.core.io.support.ResourcePatternResolver;
  * @see org.springframework.beans.factory.BeanFactory
  * @see org.springframework.core.io.ResourceLoader
  */
-public interface ApplicationContext extends ListableBeanFactory, HierarchicalBeanFactory,
-		MessageSource, ApplicationEventPublisher, ResourcePatternResolver {
+public interface ApplicationContext extends ListableBeanFactory, HierarchicalBeanFactory, ApplicationEventPublisher, ResourcePatternResolver {
 
 	/**
 	 * Return the unique id of this application context.

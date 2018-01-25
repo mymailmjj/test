@@ -18,6 +18,7 @@ package org.springframework.context.event;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.ApplicationListener;
@@ -56,7 +57,7 @@ public abstract class AbstractApplicationEventMulticaster implements Application
 	 * without synchronization while still making listener updates thread-safe.
 	 */
 	public void setConcurrentUpdates(boolean concurrent) {
-		Collection newColl = (concurrent ? CollectionFactory.createCopyOnWriteSet() : new LinkedHashSet());
+		Collection newColl = (concurrent ? new CopyOnWriteArraySet() : new LinkedHashSet());
 		// Add all previously registered listeners (usually none).
 		newColl.addAll(this.applicationListeners);
 		this.applicationListeners = newColl;
