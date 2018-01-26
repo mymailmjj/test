@@ -1,0 +1,3 @@
+ActiveMq说明
+1.ActiveMq对于amqp,mqtt,stomp协议的支持存在缺陷，在服务器没有重启的情况下，消息会丢失
+2.对于MQTT协议的QoS支持同样存在问题。
