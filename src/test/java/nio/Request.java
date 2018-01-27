@@ -66,7 +66,7 @@ public class Request {
 		Socket socket = null;
 
 		try {
-			socket = new Socket("localhost", 8081);
+			socket = new Socket("39.107.103.45", 8081);
 
 			OutputStream outputStream = socket.getOutputStream();
 
