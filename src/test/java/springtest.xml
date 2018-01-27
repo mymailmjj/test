@@ -16,17 +16,23 @@
 -->
 <beans
   xmlns="http://www.springframework.org/schema/beans"
+  xmlns:aop="http://www.springframework.org/schema/aop"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
-  http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core.xsd">
+  http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
 	
-	<bean id="test1" class="springframework.Test" scope="prototype">
-		<property name="name" value="mujianjiang"></property>
-		<property name="test" ref="test2"></property>
+	<bean id="tranService" class="springtest.dao.TranServiceImpl" >
 	</bean>
 	
-	
-	<bean id="test2" class="springframework.Test" scope="prototype">
+	<bean id="testDao" class="springtest.dao.TestDao" >
 	</bean>
+	
+	<aop:config>
+		<aop:pointcut id="pointcut" expression="(execution(* springtest.dao..*.find*(..)))"/>
+ 		<aop:aspect ref="tranService">
+            <aop:before method="openConnection" pointcut-ref="pointcut"/>
+            <aop:after method="closeConnection" pointcut-ref="pointcut"/>
+        </aop:aspect>
+    </aop:config>
 
 </beans>
