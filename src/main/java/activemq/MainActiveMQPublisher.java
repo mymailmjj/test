@@ -1,42 +1,111 @@
 package activemq;
 
-import javax.jms.Connection;
-import javax.jms.Destination;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.jms.DeliveryMode;
 import javax.jms.JMSException;
+import javax.jms.MessageNotWriteableException;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 
 import org.apache.activemq.ActiveMQConnection;
+import org.apache.activemq.command.ActiveMQTextMessage;
 import org.apache.activemq.spring.ActiveMQConnectionFactory;
 
+import utils.ExecutorUtils;
+import activemq.MainActiveMQConsumer.ConsumerTask;
+
 public class MainActiveMQPublisher {
+    
+    
+    private static String user = "system";
+    private static String password = "password";
+    private static String defaultURL = "tcp://39.107.103.45:61616";
+    private static CountDownLatch countDownLatch;
+    
+    private static ActiveMQConnection connection;
+    
+    private static AtomicInteger num = new AtomicInteger(500);
+    
+    static{
+        setConnection();
+    }
+    
+    public static void setConnection(){
+        ActiveMQConnectionFactory connectionFactory = new ActiveMQConnectionFactory();
 
-	public static void main(String[] args) throws JMSException {
-		
-		String user = "admin";
-		String password = "password";
-		String host = "localhost";
-		int port = 5672;
+        connectionFactory.setBrokerURL(defaultURL);
 
-		String connectionURI = "amqp://" + host + ":" + port;
-		
-		ActiveMQConnectionFactory activeMQConnectionFactory = new ActiveMQConnectionFactory();
-		
-		activeMQConnectionFactory.setBrokerURL(connectionURI);
-		
-		ActiveMQConnection connection = (ActiveMQConnection) activeMQConnectionFactory.createConnection(user, password);
-		
-		Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-		
-		Destination destination = session.createQueue("dist");
-		
-		MessageProducer messageProducer = session.createProducer(destination);
-		
-		
-//		messageProducer.send(message);
-		
-		
-	}
+        ActiveMQConnection connection = null;
+        
+        try {
+            connection = (ActiveMQConnection) connectionFactory.createConnection(user, password);
+            connection.start();
+            MainActiveMQPublisher.connection = connection; 
+        } catch (JMSException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    
+    static class PublishTask implements Runnable{
+
+        public void run() {
+            try {
+                    String name = Thread.currentThread().getName();
+                    
+                    ActiveMQConnection connection = MainActiveMQPublisher.connection;
+                    
+                    connection.start();
+                    
+                    Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+                    
+                    Queue queue = session.createQueue("event");
+                    
+                    MessageProducer messageProducer = session.createProducer(queue);
+                    
+                    messageProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
+                    
+                    int i = 0;
+                    
+                    while(i < 100){
+                        ActiveMQTextMessage activeMQTextMessage = new ActiveMQTextMessage();
+                        
+                        activeMQTextMessage.setText(name+" activemq sender send text"+i);
+                        
+                        messageProducer.send(activeMQTextMessage);
+                        
+                        i++;
+                        
+                        num.getAndDecrement();
+                    }
+                    
+//                    countDownLatch.countDown();
+                
+               /* countDownLatch.await(); */
+                
+                    if(num.get()==0){
+                        connection.close();
+                    }
+                
+            } catch (MessageNotWriteableException e) {
+                e.printStackTrace();
+            } catch (JMSException e) {
+                e.printStackTrace();
+            } 
+        }
+        
+        
+    }
+    
+    
+
+    public static void main(String[] args) throws JMSException {
+//        countDownLatch = new CountDownLatch(5);
+        ExecutorUtils.executor(new PublishTask(),5);
+    }
 
 }

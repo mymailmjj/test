@@ -28,9 +28,9 @@ public class MainAmqpReceiver {
 		int port = 5672;
 
 		String connectionURI = "amqp://" + host + ":" + port+"?amqp:localIdleTimeout=0";
-		String destinationName = "topic://event";
+//		String destinationName = "topic://event";
 
-//		String destinationName = "slimsmart.queue.test";
+		String destinationName = "event";
 		JmsConnectionFactory factory = new JmsConnectionFactory(connectionURI);
 
 		Connection connection = factory.createConnection(user, password);

@@ -17,6 +17,8 @@ import java.util.concurrent.TimeUnit;
 public class HttpHeartClient {
 
 	private int port;
+	
+	private String host = "127.0.0.1";
 
 	private CountDownLatch countDownLatch = new CountDownLatch(1);
 
@@ -24,8 +26,16 @@ public class HttpHeartClient {
 		this.port = port;
 		init();
 	}
+	
 
-	class HeartBeat implements Runnable{
+	public HttpHeartClient(String host,int port) {
+        this.port = port;
+        this.host = host;
+    }
+
+
+
+    class HeartBeat implements Runnable{
 
 		public void run() {
 			
@@ -69,7 +79,7 @@ public class HttpHeartClient {
 		try {
 			socketChannel = SocketChannel.open();
 			socketChannel.configureBlocking(false);
-			socketChannel.connect(new InetSocketAddress("localhost", port));
+			socketChannel.connect(new InetSocketAddress(host, port));
 
 			if (socketChannel.finishConnect()) {
 
@@ -177,7 +187,7 @@ public class HttpHeartClient {
 	 */
 	public static void main(String[] args) {
 
-		HttpHeartClient httpHeartClient = new HttpHeartClient(8081);
+		HttpHeartClient httpHeartClient = new HttpHeartClient("39.107.103.45",8081);
 
 		httpHeartClient.send("abcd");
 
