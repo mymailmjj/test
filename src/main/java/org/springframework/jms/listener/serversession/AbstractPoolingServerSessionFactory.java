@@ -25,7 +25,6 @@ import org.apache.commons.logging.LogFactory;
 
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.jms.support.JmsUtils;
-import org.springframework.scheduling.timer.TimerTaskExecutor;
 
 /**
  * Abstract base class for ServerSessionFactory implementations
@@ -138,16 +137,12 @@ public abstract class AbstractPoolingServerSessionFactory implements ServerSessi
 
 		private TaskExecutor taskExecutor;
 
-		private TimerTaskExecutor internalExecutor;
 
 		public PoolableServerSession(final ListenerSessionManager sessionManager) throws JMSException {
 			this.sessionManager = sessionManager;
 			this.session = sessionManager.createListenerSession();
 			this.taskExecutor = getTaskExecutor();
 			if (this.taskExecutor == null) {
-				this.internalExecutor = new TimerTaskExecutor();
-				this.internalExecutor.afterPropertiesSet();
-				this.taskExecutor = this.internalExecutor;
 			}
 		}
 
@@ -169,9 +164,6 @@ public abstract class AbstractPoolingServerSessionFactory implements ServerSessi
 		}
 
 		public void close() {
-			if (this.internalExecutor != null) {
-				this.internalExecutor.destroy();
-			}
 			JmsUtils.closeSession(this.session);
 		}
 	}

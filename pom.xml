@@ -33,6 +33,14 @@
 			<version>3.8.1</version>
 			<scope>test</scope>
 		</dependency>
+		
+		<!-- rabbit mq server begin -->
+		<dependency>
+		  <groupId>com.rabbitmq</groupId>
+		  <artifactId>amqp-client</artifactId>
+		  <version>5.1.2</version>
+		</dependency>
+		<!-- rabbit mq server end -->
 
 		<!-- active mq server begin -->
 		<dependency>
@@ -474,6 +482,13 @@
 		    <scope>provided</scope>
 		</dependency>
 		
+		<!-- alibaba rocketmq start-->
+		<dependency>
+		    <groupId>com.alibaba.rocketmq</groupId>
+		    <artifactId>rocketmq-client</artifactId>
+		    <version>3.6.2.Final</version>
+		</dependency>
+		<!-- alibaba rocketmq end-->
 
 	</dependencies>
 </project>
