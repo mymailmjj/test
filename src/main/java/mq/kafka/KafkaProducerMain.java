@@ -10,13 +10,19 @@ import org.apache.kafka.common.errors.OutOfOrderSequenceException;
 import org.apache.kafka.common.errors.ProducerFencedException;
 import org.apache.kafka.common.serialization.StringSerializer;
 
+/**
+ * kakfa使用消息端发送的程序
+ * @author cango
+ *
+ */
 public class KafkaProducerMain {
 
     public static void main(String[] args) {
         
         Properties props = new Properties();
-        props.put("bootstrap.servers", "39.107.103.45:9092");
+        props.put("bootstrap.servers", "47.93.42.123:9092");
         props.put("transactional.id", "11225");
+        props.put("partitioner.class", "mq.kafka.TestProducerPartitioner");
         KafkaProducer<String, String> producer = new KafkaProducer<>(props, new StringSerializer(), new StringSerializer());
         
         producer.initTransactions();
@@ -26,8 +32,9 @@ public class KafkaProducerMain {
             long startTime = System.currentTimeMillis();
             
             producer.beginTransaction();
-            for (int i = 0; i < 2000; i++){
+            for (int i = 0; i < 100; i++){
                 producer.send(new ProducerRecord<>("test", Integer.toString(i), Integer.toString(i)));
+                
                 System.out.println("发送："+i);
             }
             

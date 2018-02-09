@@ -9,6 +9,12 @@ import org.apache.kafka.streams.errors.StreamsException;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
 
+/**
+ * kafka API使用方法
+ * 这里用的是老的API
+ * @author cango
+ *
+ */
 public class KafkaStreamMain {
 
     public static void main(String[] args) {

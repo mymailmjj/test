@@ -1,37 +1,27 @@
 package mq.kafka;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
-
+/**
+ * 
+ * kafka consumer 多线程模拟多个consumer的情况
+ * 同一个consumeGroup则是竞争去同一个topic的消息
+ * 不同的consumerGroup则是订阅同一个topic的消息
+ * @author cango
+ *
+ */
 public class KafkaConsumerMain {
 
     public static void main(String[] args) {
         
-        Properties props = new Properties();  
-        props.put("bootstrap.servers", "39.107.103.45:9092");//服务器ip:端口号，集群用逗号分隔  
-        props.put("group.id", "test");  
-        props.put("enable.auto.commit", "true");  
-        props.put("auto.commit.interval.ms", "1000");  
-        props.put("session.timeout.ms", "30000");  
-        props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");  
-        props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");  
-        KafkaConsumer consumer = new KafkaConsumer<>(props);  
-        consumer.subscribe(Arrays.asList("test"));  
+        ExecutorService newFixedThreadPool = Executors.newFixedThreadPool(5);
         
+        for(int i = 0; i<5;i++){
+            newFixedThreadPool.submit(new KafkaConsumerTask());
+        }
         
-        while(true){  
-            ConsumerRecords<String,String> records = consumer.poll(100);
-            
-            for(ConsumerRecord<String,String> c:records){
-                System.out.println("fetch result:key:"+c.key()+"\tvalue:"+c.value());
-            }
-            
-        }  
+        newFixedThreadPool.shutdown();
         
     }
 
