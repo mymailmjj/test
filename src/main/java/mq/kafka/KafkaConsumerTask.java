@@ -55,7 +55,8 @@ public class KafkaConsumerTask implements Runnable {
     
     public static void main(String[] args) {
         
-        
+    	KafkaConsumerTask kafkaConsumerTask = new KafkaConsumerTask();
+        kafkaConsumerTask.run();
         
         
     }

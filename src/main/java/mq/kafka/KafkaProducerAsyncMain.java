@@ -1,11 +1,13 @@
 package mq.kafka;
 
+import java.time.LocalTime;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.kafka.clients.producer.Callback;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.clients.producer.RecordMetadata;
@@ -16,12 +18,37 @@ import org.apache.kafka.common.errors.ProducerFencedException;
 import org.apache.kafka.common.serialization.StringSerializer;
 
 /**
- * 可以同步发送，也可以异步发送，这里是同步发送的API调用
+ * 可以同步发送，也可以异步发送，这里是异步发送的API调用
  * kakfa使用消息端发送的程序
  * @author cango
  *
  */
-public class KafkaProducerMain {
+public class KafkaProducerAsyncMain {
+	
+	static class SendCallBack implements Callback{
+		
+		private LocalTime time;
+		
+		private int messageId;
+		
+		public SendCallBack(LocalTime time, int messageId) {
+			this.time = time;
+			this.messageId = messageId;
+		}
+
+
+		@Override
+		public void onCompletion(RecordMetadata metadata, Exception exception) {
+			LocalTime finishTime= LocalTime.now();
+			System.out.println("messageId: "+messageId+"\tstart send message at "+time+" receive act at:"+finishTime);
+			if(metadata!=null){
+				int partition = metadata.partition();
+				long offset = metadata.offset();
+				System.out.println("messageId: "+messageId+"\tpartition:"+partition+"\toffset:"+offset);
+			}
+		}
+		
+	}
 
     public static void main(String[] args) {
         
@@ -33,17 +60,17 @@ public class KafkaProducerMain {
         
         producer.initTransactions();
        
-        try {
+        try { 
             
             long startTime = System.currentTimeMillis();
             
             producer.beginTransaction();
             for (int i = 0; i < 100; i++){
-                Future<RecordMetadata> result = producer.send(new ProducerRecord<>("test", Integer.toString(i), Integer.toString(i)));
+                Future<RecordMetadata> result = producer.send(new ProducerRecord<>("test", Integer.toString(i), Integer.toString(i)),new SendCallBack(LocalTime.now(), i));
                 
                 RecordMetadata recordMetadata = result.get(3, TimeUnit.SECONDS);
                 
-                System.out.println("同步发送成功："+i);
+                System.out.println("异步发送成功："+i);
             }
             
             long end = System.currentTimeMillis();
