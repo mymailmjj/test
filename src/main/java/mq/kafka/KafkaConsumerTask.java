@@ -23,14 +23,14 @@ public class KafkaConsumerTask implements Runnable {
         String name = Thread.currentThread().getName();
         Properties props = new Properties();  
         props.put("bootstrap.servers", "47.93.42.123:9092");//服务器ip:端口号，集群用逗号分隔  
-        props.put("group.id", "test"+name);  
+        props.put("group.id", "test");  
         props.put("enable.auto.commit", "true");  
         props.put("auto.commit.interval.ms", "1000");  
         props.put("session.timeout.ms", "30000");  
         props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");  
         props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer");  
         KafkaConsumer consumer = new KafkaConsumer<>(props);  
-        consumer.subscribe(Arrays.asList("test"),new MyKafkaConsumerRebalanceListener());  
+        consumer.subscribe(Arrays.asList("test1"),new MyKafkaConsumerRebalanceListener());  
         
         while(true){  
             ConsumerRecords<String,String> records = consumer.poll(100);
@@ -55,8 +55,9 @@ public class KafkaConsumerTask implements Runnable {
     
     public static void main(String[] args) {
         
+        KafkaConsumerTask kafkaConsumerTask = new KafkaConsumerTask();
         
-        
+        kafkaConsumerTask.run();
         
     }
 

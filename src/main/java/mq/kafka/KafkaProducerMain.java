@@ -33,7 +33,7 @@ public class KafkaProducerMain {
             
             producer.beginTransaction();
             for (int i = 0; i < 100; i++){
-                producer.send(new ProducerRecord<>("test", Integer.toString(i), Integer.toString(i)));
+                producer.send(new ProducerRecord<>("test1", Integer.toString(i), Integer.toString(i)));
                 
                 System.out.println("发送："+i);
             }

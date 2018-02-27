@@ -32,7 +32,7 @@ public class TestProducerPartitioner implements Partitioner {
         
         try {
             int partitionNum = Integer.parseInt((String) key);
-            i= Math.abs(Integer.parseInt((String) key) % numPartitions);
+            i= Math.abs(Integer.parseInt((String) key) / 20);
         } catch (Exception e) {
             i=  Math.abs(key.hashCode() % numPartitions);
         }
