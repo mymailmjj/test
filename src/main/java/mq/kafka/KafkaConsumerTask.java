@@ -59,6 +59,7 @@ public class KafkaConsumerTask implements Runnable {
         
         kafkaConsumerTask.run();
         
+        
     }
 
 }
