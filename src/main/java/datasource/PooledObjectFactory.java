@@ -3,17 +3,31 @@ package datasource;
 import java.sql.Connection;
 
 
-public class PooledObjectFactory<T extends Connection> {
+public class PooledObjectFactory<T extends Connection,U extends PooledObject<? super Connection>> {
     
-    private static PooledConnectionFactory pooledConnectionFactory;
+    private PooledConnectionFactory pooledConnectionFactory;
     
     public PooledObjectFactory(PooledConnectionFactory pooledConnectionFactory) {
-        pooledConnectionFactory = pooledConnectionFactory;
+        this.pooledConnectionFactory = pooledConnectionFactory;
     }
 
-    public static <T extends Connection> PooledObject<T> newPooledObject(){
+    private PoolBuffer<U> poolBuffer = null;
+    
+    public PooledObjectFactory(PoolBuffer<U> poolBuffer) {
+        this.poolBuffer = poolBuffer;
+    }
+    
+    
+    public PooledObjectFactory(PooledConnectionFactory pooledConnectionFactory, PoolBuffer<U> poolBuffer) {
+        this.pooledConnectionFactory = pooledConnectionFactory;
+        this.poolBuffer = poolBuffer;
+    }
+
+
+
+    public PooledObject<T> newPooledObject(){
         
-        Connection connection = pooledConnectionFactory.createConnection();
+        Connection connection = pooledConnectionFactory.createPooledConnection();
         
         PooledObject<T> pooledObject = new PooledObject(connection);
         

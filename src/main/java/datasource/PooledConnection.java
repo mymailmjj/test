@@ -19,234 +19,210 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
-public class PooledConnection implements Connection{
+public class PooledConnection<T extends Connection> implements Connection{
+    
+    private PoolBuffer poolBuffer;
+    
+    public PooledConnection(T t,PoolBuffer poolBuffer) {
+        this.poolBuffer = poolBuffer;
+        this.t = t;
+    }
+
+    private T t;
+    
+    public PooledConnection(T t) {
+        this.t = t;
+    }
 
     @Override
     public <T> T unwrap(Class<T> iface) throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        return t.unwrap(iface);
     }
 
     @Override
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
-        // TODO Auto-generated method stub
-        return false;
+        return t.isWrapperFor(iface);
     }
 
     @Override
     public Statement createStatement() throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        return t.createStatement();
     }
 
     @Override
     public PreparedStatement prepareStatement(String sql) throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        return t.prepareStatement(sql);
     }
 
     @Override
     public CallableStatement prepareCall(String sql) throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        return t.prepareCall(sql);
     }
 
     @Override
     public String nativeSQL(String sql) throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        return t.nativeSQL(sql);
     }
 
     @Override
     public void setAutoCommit(boolean autoCommit) throws SQLException {
-        // TODO Auto-generated method stub
-        
+        t.setAutoCommit(autoCommit);
     }
 
     @Override
     public boolean getAutoCommit() throws SQLException {
-        // TODO Auto-generated method stub
-        return false;
+        return t.getAutoCommit();
     }
 
     @Override
     public void commit() throws SQLException {
-        // TODO Auto-generated method stub
-        
+        t.commit();
     }
 
     @Override
     public void rollback() throws SQLException {
-        // TODO Auto-generated method stub
-        
+        t.rollback();
     }
 
     @Override
     public void close() throws SQLException {
-        // TODO Auto-generated method stub
-        
+//        t.close();
+        poolBuffer.close(this);
     }
 
     @Override
     public boolean isClosed() throws SQLException {
-        // TODO Auto-generated method stub
-        return false;
+        return t.isClosed();
     }
 
     @Override
     public DatabaseMetaData getMetaData() throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        return t.getMetaData();
     }
 
     @Override
     public void setReadOnly(boolean readOnly) throws SQLException {
-        // TODO Auto-generated method stub
-        
+        t.setReadOnly(readOnly);
     }
 
     @Override
     public boolean isReadOnly() throws SQLException {
-        // TODO Auto-generated method stub
-        return false;
+        return t.isReadOnly();
     }
 
     @Override
     public void setCatalog(String catalog) throws SQLException {
-        // TODO Auto-generated method stub
-        
+        t.setCatalog(catalog);
     }
 
     @Override
     public String getCatalog() throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        return t.getCatalog();
     }
 
     @Override
     public void setTransactionIsolation(int level) throws SQLException {
-        // TODO Auto-generated method stub
-        
+        t.setTransactionIsolation(level);
     }
 
     @Override
     public int getTransactionIsolation() throws SQLException {
-        // TODO Auto-generated method stub
-        return 0;
+        return t.getTransactionIsolation();
     }
 
     @Override
     public SQLWarning getWarnings() throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        return t.getWarnings();
     }
 
     @Override
     public void clearWarnings() throws SQLException {
-        // TODO Auto-generated method stub
-        
+        t.clearWarnings();
     }
 
     @Override
     public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        return t.createStatement();
     }
 
     @Override
     public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        return t.prepareStatement(sql, resultSetType, resultSetConcurrency);
     }
 
     @Override
     public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        return t.prepareCall(sql, resultSetType, resultSetConcurrency);
     }
 
     @Override
     public Map<String, Class<?>> getTypeMap() throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        return t.getTypeMap();
     }
 
     @Override
     public void setTypeMap(Map<String, Class<?>> map) throws SQLException {
-        // TODO Auto-generated method stub
-        
+        t.setTypeMap(map);
     }
 
     @Override
     public void setHoldability(int holdability) throws SQLException {
-        // TODO Auto-generated method stub
-        
+       t.setHoldability(holdability);
     }
 
     @Override
     public int getHoldability() throws SQLException {
-        // TODO Auto-generated method stub
-        return 0;
+        return t.getHoldability();
     }
 
     @Override
     public Savepoint setSavepoint() throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        return t.setSavepoint();
     }
 
     @Override
     public Savepoint setSavepoint(String name) throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        return t.setSavepoint(name);
     }
 
     @Override
     public void rollback(Savepoint savepoint) throws SQLException {
-        // TODO Auto-generated method stub
-        
+        t.rollback(savepoint);
     }
 
     @Override
     public void releaseSavepoint(Savepoint savepoint) throws SQLException {
-        // TODO Auto-generated method stub
-        
+        t.releaseSavepoint(savepoint);
     }
 
     @Override
     public Statement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        return t.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability);
     }
 
     @Override
     public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        return t.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
     }
 
     @Override
     public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        return t.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
     }
 
     @Override
     public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys) throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        return t.prepareStatement(sql, autoGeneratedKeys);
     }
 
     @Override
     public PreparedStatement prepareStatement(String sql, int[] columnIndexes) throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        return t.prepareStatement(sql, columnIndexes);
     }
 
     @Override
     public PreparedStatement prepareStatement(String sql, String[] columnNames) throws SQLException {
-        // TODO Auto-generated method stub
-        return null;
+        return t.prepareStatement(sql, columnNames);
     }
 
     @Override
@@ -344,5 +320,29 @@ public class PooledConnection implements Connection{
         // TODO Auto-generated method stub
         return 0;
     }
+
+    @Override
+    public int hashCode() {
+        return t.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        PooledConnection other = (PooledConnection) obj;
+        if (t == null) {
+            if (other.t != null)
+                return false;
+        } else if (!t.equals(other.t))
+            return false;
+        return true;
+    }
+    
+    
 
 }

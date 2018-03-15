@@ -26,6 +26,7 @@ public class PooledObject<T extends Connection> {
     
     public PooledObject(T t){
         this.t = t;
+        markCreated();
     }
     
     public void markCreated(){
@@ -34,6 +35,14 @@ public class PooledObject<T extends Connection> {
     
     public void markUsing(){
         this.status = PooledObjectStatus.USING;
+    }
+    
+    public T getObject(){
+        return t;
+    }
+    
+    public void setObject(T t){
+        this.t = t;
     }
     
     

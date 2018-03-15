@@ -11,8 +11,26 @@ import java.sql.Connection;
  */
 public class PooledConnectionFactory {
     
-    public static Connection createConnection(){
-        return new PooledConnection();
+    private ConnectionFactory connectionFactory;
+    
+    private PoolBuffer poolBuffer;
+    
+    public PooledConnectionFactory(ConnectionFactory connectionFactory) {
+        this.connectionFactory = connectionFactory;
+    }
+    
+    public PooledConnectionFactory(ConnectionFactory connectionFactory, PoolBuffer poolBuffer) {
+        this(connectionFactory);
+        this.poolBuffer = poolBuffer;
+    }
+
+    public Connection createPooledConnection(){
+        
+        Connection createConnection = connectionFactory.createConnection();
+        
+        PooledConnection pc = new PooledConnection(createConnection,poolBuffer);
+        
+        return pc;
     }
 
 }
