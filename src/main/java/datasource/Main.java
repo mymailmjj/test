@@ -73,31 +73,52 @@ public class Main extends TestCase{
         
         try {
             properties.load(inputStream);
-            
-        System.out.println(properties);
-            
         } catch (IOException e) {
             e.printStackTrace();
         }
         
         DataSource dataSource = BasicDataSourceFactory.createDataSource(properties);
         
-        Connection connection = null;
-        
-        try {
-             connection = dataSource.getConnection();
-            System.out.println(connection);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }finally{
-            try {
-                connection.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
+        Thread[] thread = new Thread[20];
+            
+            for(int i = 0;i <20; i++){
+                
+                thread[i] = new Thread(new Runnable() {
+                    
+                    @Override
+                    public void run() {
+                        
+                            Connection connection = null;
+                            try {
+                                connection = dataSource.getConnection();
+                                System.out.println("获得连接："+connection);
+                            } catch (SQLException e) {
+                                e.printStackTrace();
+                            }finally{
+                                try {
+                                    connection.close();
+                                } catch (SQLException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                    }
+                });
+               
             }
-        }
-        
+           
+            for(int i = 0;i <20; i++){
+                Thread t = thread[i];
+                t.start();
+            }
+            
+            for(int i = 0;i <20; i++){
+                try {
+                    thread[i].join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+            
     }
-    
 
 }

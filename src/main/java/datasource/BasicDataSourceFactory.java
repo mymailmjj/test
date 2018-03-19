@@ -6,12 +6,16 @@ import javax.sql.DataSource;
 
 public class BasicDataSourceFactory {
     
+    private static volatile DataSource dataSource = null;
+    
     /**
      * 根据加载的属性类
      * @param prop
      * @return
      */
-    public static DataSource createDataSource(Properties prop){
+    public static synchronized DataSource createDataSource(Properties prop){
+        
+        if(BasicDataSourceFactory.dataSource!=null) return dataSource;
         
         BasicDataSource basicDataSource = new BasicDataSource();
         
@@ -65,6 +69,8 @@ public class BasicDataSourceFactory {
             int maWait = Integer.valueOf(maxWait);
             basicDataSource.setMaxWait(maWait);
         }
+        
+        dataSource = basicDataSource;
         
         return basicDataSource;
     }

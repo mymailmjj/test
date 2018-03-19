@@ -57,13 +57,11 @@ public class BasicDataSource implements DataSource{
         this.poolBuffer = poolBuffer;
     }
     
-    
-    
     public BasicDataSource() {
     
     }
     
-    private DataSource datasource;
+    private volatile DataSource datasource;
 
     @Override
     public PrintWriter getLogWriter() throws SQLException {
@@ -214,11 +212,13 @@ public class BasicDataSource implements DataSource{
         this.maxWait = maxWait;
     }
     
-    private DataSource createPoolDataSource(){
+    private synchronized DataSource createPoolDataSource(){
         
         if(this.datasource!=null){
             return this.datasource;
         }
+        
+        System.out.println(Thread.currentThread().getName()+"创建DataSource");
         
         PooledDataSource pooledDataSource = new PooledDataSource();
         
