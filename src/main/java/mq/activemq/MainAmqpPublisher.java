@@ -33,7 +33,7 @@ public class MainAmqpPublisher {
 		int port = 5672;
 
 		String connectionURI = "amqp://" + host + ":" + port;
-		String destinationName = "topic://event";
+		String destinationName = "eventsss";
 
 //		String destinationName = "slimsmart.queue.test";
 		

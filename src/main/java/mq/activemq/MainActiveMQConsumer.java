@@ -17,7 +17,7 @@ import utils.ExecutorUtils;
 public class MainActiveMQConsumer {
     private static String user = "system";
     private static String password = "password";
-    private static String defaultURL = "tcp://localhost:61616";
+    private static String defaultURL = "tcp://39.107.103.45:61616";
     
     private static ActiveMQConnection connection;
     

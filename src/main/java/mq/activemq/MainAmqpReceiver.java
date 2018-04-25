@@ -30,7 +30,7 @@ public class MainAmqpReceiver {
 		String connectionURI = "amqp://" + host + ":" + port+"?amqp:localIdleTimeout=0";
 //		String destinationName = "topic://event";
 
-		String destinationName = "topic://event";
+		String destinationName = "eventsss";
 		JmsConnectionFactory factory = new JmsConnectionFactory(connectionURI);
 
 		Connection connection = factory.createConnection(user, password);
