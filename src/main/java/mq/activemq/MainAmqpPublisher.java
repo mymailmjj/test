@@ -66,7 +66,7 @@ public class MainAmqpPublisher {
 		MessageProducer producer = session.createProducer(destination);
 		
 		//设置持久化,选择持久化则服务器会保留消息，直到接收方上线
-		producer.setDeliveryMode(DeliveryMode.PERSISTENT);
+		producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 		
 		for (int i = 1; i <= messages; i++) {
 			TextMessage msg = session.createTextMessage("#:" + i+"\t"+body);

@@ -66,7 +66,7 @@ public class MainActiveMQPublisher {
             		  AtomicInteger atomicInteger = sessions.get();
                 	  
                 	  if(atomicInteger==null){
-                		  AtomicInteger num = new AtomicInteger(10000);
+                		  AtomicInteger num = new AtomicInteger(2);
                 		  sessions.set(num);
                 	  }else{
                 		  int incrementAndGet = atomicInteger.decrementAndGet();
@@ -86,6 +86,8 @@ public class MainActiveMQPublisher {
     					 		+ "明确了凡是与百姓利益相关的事情，都要充分征集群众意见，作为决策的重要依据。目前，已经完成的132个涉及住房改善、社会服务等方面的项目，个个环节都采纳了群众意见。民生工作民意立项的做法，如今已经在北京全市推广。"+i);
     					  
     					  messageProducer.send(activeMQTextMessage);
+    					  
+    					  
     				} catch (JMSException e) {
     					// TODO Auto-generated catch block
     					e.printStackTrace();
@@ -108,13 +110,15 @@ public class MainActiveMQPublisher {
                     try {
 						Session	session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 						
-						Queue queue = session.createQueue("event");
+						Queue queue = session.createQueue("newevent11");
 						
 //						Topic topic = session.createTopic("eventTopic");
 						
 						MessageProducer messageProducer = session.createProducer(queue);
 						
-						messageProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
+						messageProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+						
+//						messageProducer.setTimeToLive(20*1000);
 						
 						send(messageProducer);
 						
