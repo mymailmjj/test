@@ -23,7 +23,7 @@ public class MainActiveMQPublisher {
     
     private static String user = "system";
     private static String password = "password";
-    private static String defaultURL = "tcp://39.107.103.45:61616";
+    private static String defaultURL = "tcp://localhost:61616";
     private static CountDownLatch countDownLatch;
     
     private static ActiveMQConnection connection;
@@ -66,7 +66,7 @@ public class MainActiveMQPublisher {
             		  AtomicInteger atomicInteger = sessions.get();
                 	  
                 	  if(atomicInteger==null){
-                		  AtomicInteger num = new AtomicInteger(2);
+                		  AtomicInteger num = new AtomicInteger(5);
                 		  sessions.set(num);
                 	  }else{
                 		  int incrementAndGet = atomicInteger.decrementAndGet();

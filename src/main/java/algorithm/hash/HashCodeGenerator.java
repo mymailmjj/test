@@ -47,7 +47,7 @@ public class HashCodeGenerator {
   
         long k;  
         while (buf.remaining() >= 8) {  
-            k = buf.getLong();  
+            k = buf.getLong();                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
   
             k *= m;  
             k ^= k >>> r;  
