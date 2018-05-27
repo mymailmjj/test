@@ -33,6 +33,10 @@ public class AvlTree {
 	
 	private static AtomicInteger nodeNum = new AtomicInteger(0);  //先右后左
 	
+	/**
+	 * 插入方法
+	 * @param node
+	 */
 	private <U extends Comparable<U>> void insertNode(BinaryTreeNode<U> node) {
 		nodeNum.incrementAndGet();
 		if (root == null) {
@@ -41,6 +45,16 @@ public class AvlTree {
 			root.insert(node);
 		}
 	}
+	
+	
+	/**
+	 * 删除方法
+	 * @param node
+	 */
+	private <U extends Comparable<U>> void removeNode(BinaryTreeNode<U> node) {
+			root.remove(node);
+	}
+	
 	
 	private <U extends Comparable<U>> BinaryTreeNode<U> queryNode(BinaryTreeNode<U> node) {
 			return root.queryNode(node);
@@ -88,7 +102,7 @@ public class AvlTree {
 	}
 	
 
-	private class BinaryTreeNode<U extends Comparable<U>> {
+	private class BinaryTreeNode<U extends Comparable<U>> implements Cloneable{
 
 		private U t; // data
 
@@ -142,8 +156,243 @@ public class AvlTree {
 			
 		}
 		
+		/**
+		 * 找出最小的子节点
+		 * @param removeNode
+		 * @return
+		 */
+		private BinaryTreeNode<U> findMin(BinaryTreeNode<U> sonNode){
+		
+			if(sonNode.leftChild!=null){
+				return findMin(sonNode.leftChild);
+			}
+			
+			return sonNode;
+		}
+		
 
 		/**
+		 * 找出最大的子节点
+		 * @param removeNode
+		 * @return
+		 */
+		private BinaryTreeNode<U> findMax(BinaryTreeNode<U> sonNode){
+			
+			if(sonNode.rightChild!=null){
+				return findMax(sonNode.rightChild);
+			}
+		
+			return sonNode;
+		}
+		
+		
+		/**
+		 * 直接删除
+		 * @param removeNode
+		 * @return
+		 */
+		@Deprecated
+		public boolean removeDirect(BinaryTreeNode<U> sonNode,BinaryTreeNode<U> removeNode) {
+			
+			//先从子树中找到要删除的节点
+			BinaryTreeNode<U> queryNode = sonNode.queryNode(removeNode);
+			
+			if(queryNode==null) return false;
+			
+			if(queryNode.leftChild!=null&&queryNode.rightChild!=null){
+				if(queryNode.parent!=null){
+					queryNode.parent.leftChild = queryNode.leftChild;
+					queryNode.parent.rightChild = queryNode.rightChild;
+				}
+				queryNode.leftChild.parent = queryNode.parent;
+				queryNode.rightChild.parent = queryNode.parent;
+			}else if(queryNode.rightChild!=null){
+				if(queryNode.parent!=null){
+					queryNode.parent.rightChild = queryNode.rightChild;
+				}
+				queryNode.rightChild.parent = queryNode.parent;
+			}else if(queryNode.leftChild!=null){
+				if(queryNode.parent!=null){
+					queryNode.parent.leftChild = queryNode.leftChild;
+				}
+				queryNode.leftChild.parent = queryNode.parent;
+			}else{//左右节点都没有
+				if(queryNode.parent!=null&&queryNode.parent.leftChild == queryNode){
+					queryNode.parent.leftChild = null;
+					
+					if(queryNode.parent.rightChild==null){
+						queryNode.parent.height=1;
+					}
+					
+				}
+				
+				if(queryNode.parent!=null&&queryNode.parent.rightChild == queryNode){
+					queryNode.parent.rightChild = null;
+					
+					if(queryNode.parent.leftChild==null){
+						queryNode.parent.height=1;
+					}
+				}
+			}
+			
+			return true;
+			
+		}
+		
+		
+		private void mergeNode(BinaryTreeNode<U> targetNode){
+			
+			if(targetNode.parent!=null&&targetNode.parent.rightChild == targetNode){
+				
+				if(targetNode.leftChild==null&&targetNode.rightChild==null){
+					targetNode.parent.rightChild = null;
+					targetNode.parent.height = 1;
+				}
+				
+				if(targetNode.leftChild!=null){
+					targetNode.parent.rightChild = targetNode.leftChild;
+					targetNode.leftChild.parent = targetNode.parent;
+					targetNode.parent.height--;
+				}
+				
+				
+				if(targetNode.rightChild!=null){
+					targetNode.parent.rightChild = targetNode.rightChild;
+					targetNode.rightChild.parent = targetNode.parent;
+					targetNode.parent.height--;
+				}
+			
+			}
+			
+			
+			if(targetNode.parent!=null&&targetNode.parent.leftChild == targetNode){
+				
+				if(targetNode.leftChild==null&&targetNode.rightChild==null){
+					targetNode.parent.leftChild = null;
+					targetNode.parent.height = 1;
+				}
+				
+				if(targetNode.leftChild!=null){
+					targetNode.parent.leftChild = targetNode.leftChild;
+					targetNode.leftChild.parent = targetNode.parent;
+					targetNode.parent.height--;
+				}
+				
+				
+				if(targetNode.rightChild!=null){
+					targetNode.parent.leftChild = targetNode.rightChild;
+					targetNode.rightChild.parent = targetNode.parent;
+					targetNode.parent.height--;
+				}
+			
+			}
+			
+		}
+		
+		/**
+		 * 将originalnode替换为targetNode
+		 * @param originalNode
+		 * @param targetNode
+		 */
+		private void replaceNode(BinaryTreeNode<U> originalNode,BinaryTreeNode<U> targetNode){
+			
+			targetNode.height = originalNode.height;
+			
+			if(originalNode.leftChild!=null){
+				targetNode.leftChild = originalNode.leftChild;
+				targetNode.leftChild.parent = targetNode;
+			}else{
+				targetNode.leftChild = null;
+			}
+			
+			if(originalNode.rightChild!=null){
+				targetNode.rightChild = originalNode.rightChild;
+				targetNode.rightChild.parent = targetNode;
+			}else{
+				targetNode.rightChild = null;
+			}
+			
+			//处理父亲节点
+			if(originalNode.parent!=null&&originalNode.parent.leftChild == originalNode){
+				originalNode.parent.leftChild = targetNode;
+				targetNode.setParent(originalNode.parent);
+			}
+			
+			if(originalNode.parent!=null&&originalNode.parent.rightChild == originalNode){
+				originalNode.parent.rightChild = targetNode;
+				targetNode.setParent(originalNode.parent);
+			}
+			//处理根节点的情况
+			if(originalNode.parent == null){
+				root = targetNode;
+				targetNode.setParent(null);
+			}
+			
+		}
+		
+		/**
+		 * 删除方法
+		 * @param insertNode
+		 */
+		public boolean remove(BinaryTreeNode<U> removeNode) {
+			
+			BinaryTreeNode<U> queryNode = queryNode(removeNode);
+			
+			//左右节点都有
+			if(queryNode.leftChild!=null&&queryNode.rightChild!=null){
+				BinaryTreeNode<U> findMax = findMin(queryNode.rightChild);
+				mergeNode(findMax);
+				replaceNode(removeNode, findMax);
+				afterRemoveFix(findMax);
+			//只有左边的节点
+			}else if(queryNode.leftChild!=null){
+				BinaryTreeNode<U> findMinNode = findMax(queryNode.leftChild);
+				mergeNode(findMinNode);
+				replaceNode(removeNode, findMinNode);
+				afterRemoveFix(findMinNode);
+			//只有右边的节点
+			}else if(queryNode.rightChild!=null){
+				BinaryTreeNode<U> findMax = findMin(queryNode.rightChild);
+				mergeNode(findMax);
+				replaceNode(removeNode, findMax);
+				afterRemoveFix(findMax);
+			//没有子节点
+			}else{
+				mergeNode(removeNode);
+			}
+			
+			return true;
+			
+		}
+		
+		private void afterRemoveFix(BinaryTreeNode<U> fixNode){
+			
+			//先重设某个点的lh  rh
+			BinaryTreeNode<U> temp = fixNode;
+			
+			do{
+				temp.height =  Math.max(temp.leftChild == null ? 0 : temp.leftChild.height,
+						temp.rightChild == null ? 0 : temp.rightChild.height) + 1;
+				
+				if (Math.abs(heightOf(leftChild) - heightOf(rightChild)) > 1) {
+					
+					System.out.println("temp>2"+temp);  //TODO  这里考虑怎么旋转
+					
+				}
+				
+				temp = temp.parent;
+			}while(temp!=null);
+			
+			//检查是否超过2
+			
+			//如果超过则重新旋转调整
+			
+		}
+		
+		
+
+		/**
+		 * 插入方法
 		 * @param insertNode
 		 */
 		public void insert(BinaryTreeNode<U> insertNode) {
@@ -241,6 +490,7 @@ public class AvlTree {
 			
 			if(p.getParent()==null){
 				root = r;
+				r.setParent(null);
 			}else if(p.getParent().rightChild==p){
 				p.getParent().rightChild = r;
 				r.parent = p.parent;
@@ -315,8 +565,8 @@ public class AvlTree {
 		@Override
 		public String toString() {
 			return "BinaryTreeNode [" + (t != null ? "t=" + t + ", " : "")
-					+ (leftChild != null ? "leftChild=" + leftChild + ", " : "")
-					+ (rightChild != null ? "rightChild=" + rightChild + ", " : "")
+					+ (leftChild != null ? "leftChild=" + leftChild.t + ", " : "")
+					+ (rightChild != null ? "rightChild=" + rightChild.t + ", " : "")
 					+ (parent != null ? "parent=" + parent.t + ", " : "") + "height=" + height + "]";
 		}
 
@@ -351,6 +601,69 @@ public class AvlTree {
 		}
 
 	}
+	
+	
+	/*2, 28, 30, 5, 31, 3, 42*/
+	
+/*	public static void main(String[] args) {
+		
+		AvlTree bt = new AvlTree();
+		
+		BinaryTreeNode<Integer> root = bt.new BinaryTreeNode<Integer>(2);
+		
+		BinaryTreeNode<Integer> node1 = bt.new BinaryTreeNode<Integer>(28);
+		
+		BinaryTreeNode<Integer> node2 = bt.new BinaryTreeNode<Integer>(30);
+		
+		BinaryTreeNode<Integer> node3 = bt.new BinaryTreeNode<Integer>(5);
+		
+		BinaryTreeNode<Integer> node4 = bt.new BinaryTreeNode<Integer>(31);
+		
+		BinaryTreeNode<Integer> node5 = bt.new BinaryTreeNode<Integer>(3);
+		
+		BinaryTreeNode<Integer> node6 = bt.new BinaryTreeNode<Integer>(42);
+		
+		bt.insertNode(root);
+		
+		bt.insertNode(node1);
+		
+		bt.insertNode(node2);
+		
+		bt.insertNode(node3);
+		
+		bt.insertNode(node4);
+		
+		bt.insertNode(node5);
+		
+		bt.insertNode(node6);
+		
+		bt.printAllTree();
+		
+		bt.printRotateStatic();
+		
+		BinaryTreeNode<Integer> removeNode = root;
+		
+		if(removeNode!=null){
+			long now = System.currentTimeMillis();
+			
+			System.out.println("queryNode:"+removeNode);
+			
+			BinaryTreeNode<Integer> queryNode2 = bt.queryNode(removeNode);
+			
+			System.out.println("结果："+removeNode);
+			
+			long end = System.currentTimeMillis();
+			
+			System.out.println("query耗时:"+(end-now));
+		}
+		
+		bt.removeNode(removeNode);
+		
+		System.out.println("--------------------after remove--------------------------");
+		
+		bt.printAllTree();
+		
+	}*/
 
 	/**
 	 * 测试方法
@@ -362,7 +675,7 @@ public class AvlTree {
 		BinaryTreeNode<Integer> root = bt.new BinaryTreeNode<Integer>(20);
 		Random random = new Random();
 		
-		int num = 100000;
+		int num = 10000;
 		
 		int[] ran = new int[num];
 		
@@ -372,7 +685,7 @@ public class AvlTree {
 		
 		int i = 0;
 		while(i < num){
-			int a = random.nextInt(1000000);
+			int a = random.nextInt(100000);
 			int[] ran1 = Arrays.copyOf(ran, num);
 			Arrays.sort(ran1);
 			int binarySearch = Arrays.binarySearch(ran1, a);
@@ -381,7 +694,7 @@ public class AvlTree {
 				ran[i++] = a;
 				BinaryTreeNode<Integer> rannode = bt.new BinaryTreeNode<Integer>(a);
 				bt.insertNode(rannode);
-				if(i==50){
+				if(i==1){
 					queryNode = rannode;
 				}
 			}
@@ -391,22 +704,32 @@ public class AvlTree {
 		
 		System.out.println("插入耗时:"+(insertEnd-insertStart)+"毫秒");
 			
-		
-//		System.out.println("插入的数字是:"+Arrays.toString(ran));
+		System.out.println("插入的数字是:"+Arrays.toString(ran));
 
 //		bt.printAllTree();
 		
 		bt.printRotateStatic();
 		
-		long now = System.currentTimeMillis();
+	/*	if(queryNode!=null){
+			long now = System.currentTimeMillis();
+			
+			System.out.println("queryNode:"+queryNode);
+			
+			BinaryTreeNode<Integer> queryNode2 = bt.queryNode(queryNode);
+			
+			System.out.println("结果："+queryNode2);
+			
+			long end = System.currentTimeMillis();
+			
+			System.out.println("query耗时:"+(end-now));
+		}
 		
-		BinaryTreeNode<Integer> queryNode2 = bt.queryNode(queryNode);
+		bt.removeNode(queryNode);
 		
-//		System.out.println("结果："+queryNode2);
+		System.out.println("--------------------after remove--------------------------");*/
 		
-		long end = System.currentTimeMillis();
+//		bt.printAllTree();
 		
-		System.out.println("耗时:"+(end-now));
 
 	}
 
