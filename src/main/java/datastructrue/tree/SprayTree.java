@@ -1,7 +1,7 @@
 /**
  * 
  */
-package algorithm.tree;
+package datastructrue.tree;
 
 
 

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package algorithm.line;
+package datastructrue.line;
 
 /**
  * 队列的实现  使用链表实现

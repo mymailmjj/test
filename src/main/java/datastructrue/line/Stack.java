@@ -1,7 +1,7 @@
 /**
  * 
  */
-package algorithm.line;
+package datastructrue.line;
 
 /**
  * @author mymai

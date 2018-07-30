@@ -1,4 +1,4 @@
-package algorithm.heap;
+package datastructrue.heap;
 
 /**
  * 二叉堆，可以用来排序

@@ -1,7 +1,7 @@
 /**
  * 
  */
-package algorithm.line;
+package datastructrue.line;
 
 /**
  * 单向非循环链表

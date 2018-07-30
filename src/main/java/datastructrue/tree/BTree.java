@@ -1,7 +1,7 @@
 /**
  * 
  */
-package algorithm.tree;
+package datastructrue.tree;
 
 import java.util.ArrayList;
 import java.util.Iterator;

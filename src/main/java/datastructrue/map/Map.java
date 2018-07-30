@@ -1,4 +1,4 @@
-package algorithm.map;
+package datastructrue.map;
 
 public interface Map<K, V> {
 	

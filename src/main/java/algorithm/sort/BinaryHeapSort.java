@@ -1,10 +1,10 @@
-package algorithm.heap;
+package algorithm.sort;
 
 import java.time.Duration;
 import java.time.LocalTime;
 
-import algorithm.heap.BinaryHeap.Node;
-import algorithm.sort.InsertSort;
+import datastructrue.heap.BinaryHeap;
+import datastructrue.heap.BinaryHeap.Node;
 import edu.emory.mathcs.backport.java.util.Arrays;
 import utils.NumberUtils;
 
