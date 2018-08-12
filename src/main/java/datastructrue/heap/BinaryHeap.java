@@ -11,7 +11,7 @@ public class BinaryHeap<T extends Comparable<T>> {
 
 	private int size = 16;
 
-	private int ensureSize = 0;
+	private int ensureSize = 0;   //这里放的是里面包含的元素的个数
 
 	private Node<T>[] cap; // 根节点
 
@@ -26,6 +26,62 @@ public class BinaryHeap<T extends Comparable<T>> {
 		size = newSize;
 
 	}
+	
+	public void decreaseKey(T t){
+		int j = 0;
+		for(int i =0 ;i < ensureSize;i++){
+			BinaryHeap<T>.Node<T> node = cap[i];
+			if(node.t==t){
+				j = i;
+				break;
+			}
+		}
+		
+		shiftUp(j, t);
+		
+	}
+	
+	
+	private void shiftUp(int i,T t){
+		
+		int p = Integer.MAX_VALUE;
+		while(p >0){
+			p = ((i+1)>>1)-1;
+			BinaryHeap<T>.Node<T> node = cap[p];
+			if(node.t.compareTo(t) > 0){
+				swap(p, i);
+			}
+			i = p;
+		}
+		
+	}
+	
+	
+	private void shiftDown(int i,Node<T> nodev){
+		
+		int p = 0;
+		while(p < ensureSize){
+			p = ((i+1)<<1)-1;
+			BinaryHeap<T>.Node<T> node = cap[p];
+			BinaryHeap<T>.Node<T> node1 = cap[p+1];
+			if(node!=null&&node.t.compareTo(nodev.t) < 0){
+				swap(p, i);
+				i = p;
+				continue;
+			}
+			
+			if(node1!=null&&node.t.compareTo(nodev.t) < 0){
+				swap(p+1, i);
+				i = p+1;
+			}
+			i = p;
+		}
+		
+		
+	}
+	
+	
+	
 
 	public void insert(T t) {
 		if (cap == null) {
@@ -43,8 +99,11 @@ public class BinaryHeap<T extends Comparable<T>> {
 				p = ((p + 1) >> 1) - 1;
 				Node parent = cap[p];
 				int r = parent.compareTo(inserNode);
-				if (r > 0)
+				if (r < 0){
+					p = i;
 					break;
+				}
+					
 				cap[i] = cap[p];
 			}
 
@@ -56,6 +115,20 @@ public class BinaryHeap<T extends Comparable<T>> {
 			ensureSize();
 		}
 
+	}
+	
+	
+	public Node deleteMin(){
+		if(ensureSize<1) return null;
+		Node n = cap[0];
+		printTree();
+		cap[0] = cap[ensureSize-1];
+		cap[ensureSize-1] = null;
+		shiftDown(0, cap[0]);
+		ensureSize--;
+		return n;
+		
+		
 	}
 
 	public Node removeHead() {
@@ -106,9 +179,12 @@ public class BinaryHeap<T extends Comparable<T>> {
 
 	public void printTree() {
 		int i = 0;
+		System.out.print("(");
 		while (i < ensureSize) {
-			System.out.println(cap[i++]);
+			System.out.print(cap[i++]+"\t");
 		}
+		
+		System.out.print(")");
 	}
 
 	public class Node<U extends T> implements Comparable<Node<? extends U>> {
