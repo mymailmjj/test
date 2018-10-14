@@ -33,14 +33,25 @@
 			<version>3.8.1</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<!-- es start -->
+		<!-- es end -->
+
+		<!-- lucene start -->
 		<dependency>
-			<groupId>org.elasticsearch</groupId>
-			<artifactId>elasticsearch</artifactId>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-core</artifactId>
 			<version>6.3.0</version>
 		</dependency>
-		<!-- es end -->
+
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-queryparser</artifactId>
+			<version>6.3.0</version>
+		</dependency>
+
+
+		<!-- lucene end -->
 
 		<!-- rabbit mq server begin -->
 		<dependency>
