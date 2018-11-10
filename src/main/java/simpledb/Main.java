@@ -1,49 +1,28 @@
 package simpledb;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
-import java.util.zip.Adler32;
 
 public class Main {
 
 	public static void main(String[] args) throws IOException {
 		
-		File file = new File("D://abc.txt");
+		FileIndexAppender fileIndexAppender = new FileIndexAppender("C://Users//mymai//Desktop//0000//simpledb//index.log", "rw");
 		
-		Adler32 adler32 = new Adler32();
+		FileAppender fileAppender = new FileAppender("C://Users//mymai//Desktop//0000//simpledb//data.log", "rw",fileIndexAppender);
 		
-		if(!file.exists()) file.createNewFile();
-		else {
-			file.delete();
-			file.createNewFile();
-		}
+		StringByteInter stringByteInter1 = new StringByteInter("a");
 		
-		RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");
+		Page page = new Page<>(1,stringByteInter1);
 		
-		randomAccessFile.seek(10000);
+		fileAppender.write(page);
 		
-		String str = "abcde";
+		StringByteInter stringByteInter2 = new StringByteInter("b");
 		
-		byte[] bytes = str.getBytes();
+		Page page1 = new Page<>(2,stringByteInter2);
 		
-		adler32.update(bytes);
+		fileAppender.write(page1);
 		
-		long value = adler32.getValue();
-		
-		System.out.println("checksum:"+value);
-		
-		randomAccessFile.write(bytes);
-		
-		randomAccessFile.writeLong(value);
-		
-		randomAccessFile.seek(20000);
-		
-		randomAccessFile.writeBytes("hhhh");
-		
-		randomAccessFile.close();
+		fileAppender.close();
 
 	}
 

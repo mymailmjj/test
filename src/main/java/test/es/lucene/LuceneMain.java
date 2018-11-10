@@ -1,4 +1,4 @@
-package test.es.lucene;
+package es.lucene;
 
 import java.io.File;
 import java.io.FileReader;
